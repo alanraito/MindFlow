@@ -1,0 +1,52 @@
+/*
+  Arquivo: public/css/base.css
+  Descrição: Revitalizada a paleta de cores, tipografia e variáveis de design para um visual mais moderno e envolvente.
+*/
+
+:root {
+    --background-color: #f4f7fa;
+    --background-color-secondary: #ffffff;
+    --background-color-tertiary: #f8fafc;
+    --sidebar-background: #ffffff;
+    --header-background: rgba(255, 255, 255, 0.8);
+
+    --text-color-primary: #1e293b;
+    --text-color-secondary: #64748b;
+    --text-color-light: #94a3b8;
+
+    --border-color: #e2e8f0;
+    --hover-color: #f1f5f9;
+
+    --accent-color: #4f46e5;
+    --accent-color-dark: #4338ca;
+    --accent-color-light: rgba(99, 102, 241, 0.1);
+    
+    --secondary-button-bg: #e2e8f0;
+    --secondary-button-text: #475569;
+    --secondary-button-border: #cbd5e1;
+    --secondary-button-bg-hover: #cbd5e1;
+    --secondary-button-text-hover: #1e293b;
+    --secondary-button-border-hover: #94a3b8;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    --border-radius: 12px;
+}
+
+html, body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.font-size-medium { font-size: 16px; }
+.font-size-large { font-size: 18px; }
+
+.header-text { color: var(--text-color-primary); }
+.main-content-text { color: var(--text-color-secondary); }
+.secondary-text { color: var(--text-color-light); }
+.text-accent { color: var(--accent-color); }
+.border-accent { border-color: var(--accent-color); }

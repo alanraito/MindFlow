@@ -1,0 +1,163 @@
+/*
+  Arquivo: src/pages/StudyPage.css
+  Descrição: Novos estilos para criar um layout moderno e profissional para a página de estudos, incluindo cabeçalho, abas e cards estilizados.
+*/
+
+.study-page-container {
+    padding: 2rem;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.study-page-header {
+    margin-bottom: 1rem;
+}
+
+.study-page-header h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--header-text);
+}
+
+.study-page-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.study-area-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.study-area-selector button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: var(--text-color-secondary);
+    margin-bottom: -1px; /* Alinha a borda com a borda do container */
+}
+
+.study-area-selector button:hover {
+    color: var(--text-color-primary);
+}
+
+.study-area-selector button.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--color-accent);
+}
+
+.back-to-map-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--background-color-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--text-color-primary);
+    transition: background-color 0.2s;
+}
+
+.back-to-map-button:hover {
+    background-color: var(--hover-color);
+}
+
+.wordcloud-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.wordcloud-preview-card {
+    background-color: var(--background-color-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.dark-mode .wordcloud-preview-card {
+    background-color: #1F2937;
+    border-color: #374151;
+}
+
+.wordcloud-preview-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.wordcloud-preview-info h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color-primary);
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+}
+
+.wordcloud-preview-info p {
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 1rem;
+}
+
+.wordcloud-preview-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.wordcloud-preview-actions .button-primary,
+.wordcloud-preview-actions .button-danger {
+    border-radius: 9999px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.wordcloud-preview-actions .button-primary:hover,
+.wordcloud-preview-actions .button-danger:hover {
+    transform: scale(1.05);
+}
+
+.button-danger {
+    background-color: #ef4444;
+    color: white;
+}
+
+.button-danger:hover {
+    background-color: #dc2626;
+}
+
+.no-content-message {
+    text-align: center;
+    color: var(--text-color-secondary);
+    padding: 4rem 1rem;
+    background-color: var(--background-color-tertiary);
+    border-radius: 12px;
+}
+
+.dark-mode .no-content-message {
+    background-color: #1F2937;
+}
+
+.study-view-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+}

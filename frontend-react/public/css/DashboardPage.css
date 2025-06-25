@@ -1,0 +1,122 @@
+/*
+  Arquivo: src/pages/DashboardPage.css
+  Descrição: Estilos modernos para os cards de mapa no dashboard, com mais profundidade e elementos visuais.
+*/
+.dashboard-container {
+    padding: 2rem;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.map-section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.map-card {
+    background-color: var(--background-color-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, transform 0.2s;
+    overflow: hidden;
+}
+
+.map-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem 1.25rem 1rem;
+    position: relative;
+}
+
+.card-header::after {
+    content: 'hub';
+    font-family: 'Material Icons';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 3rem;
+    color: var(--accent-color);
+    opacity: 0.07;
+    transform: rotate(-10deg);
+}
+
+
+.map-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color-primary);
+    margin-right: 1rem;
+}
+
+.delete-button {
+    background: none;
+    border: none;
+    color: var(--text-color-light);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    z-index: 5;
+}
+
+.delete-button:hover {
+    background-color: var(--hover-color);
+    color: #ef4444;
+}
+
+.card-body {
+    padding: 0 1.25rem 1rem;
+    flex-grow: 1;
+}
+
+.map-creator {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+}
+
+.card-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background-color: var(--background-color-tertiary);
+    border-top: 1px solid var(--border-color);
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.button.button-secondary,
+.button.button-primary {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 8px;
+}

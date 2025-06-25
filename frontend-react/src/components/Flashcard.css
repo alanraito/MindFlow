@@ -1,0 +1,313 @@
+/*
+  Arquivo: src/components/Flashcard.css
+  Descrição: Removida a altura fixa e a barra de rolagem para permitir que o card cresça dinamicamente com o conteúdo. Adicionada uma transição de altura.
+*/
+
+/* Layout Geral da Página */
+.study-page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    background-color: #f0f2f5;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+}
+
+.study-main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.back-to-map-button-standalone {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+    z-index: 20;
+}
+
+.back-to-map-button-standalone:hover {
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* --- ESTILOS MODO FOCO --- */
+.flashcard-focus-container {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 4rem;
+}
+
+.flashcard-container {
+    width: 100%;
+    /* A altura agora é definida dinamicamente via prop de estilo */
+    perspective: 1500px;
+    transition: height 0.3s ease-in-out; /* Anima a mudança de altura */
+}
+
+.flashcard-flipper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.7s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flashcard-flipper.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    
+    display: flex;
+    flex-direction: column;
+    
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #0097a7, #006064);
+    color: #ffffff;
+}
+
+.flashcard-face--back {
+    transform: rotateY(180deg);
+}
+
+.flashcard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.deck-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-height: 27px;
+}
+
+.flashcard-delete-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease-in-out;
+}
+
+.flashcard-delete-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.flashcard-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.study-navigation {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.nav-button {
+    background-color: #ffffff;
+    color: #444;
+    border: 1px solid #ccc;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.nav-button:hover {
+    background-color: #f8f8f8;
+    border-color: #bbb;
+}
+
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-indicator {
+    font-weight: 600;
+    color: #333;
+}
+
+/* --- ANIMAÇÕES DE NAVEGAÇÃO --- */
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.fade-out {
+    animation: fadeOut 0.2s ease-out forwards;
+}
+
+.fade-in {
+    animation: fadeIn 0.2s ease-in forwards;
+}
+
+/* --- ESTILOS VISUALIZAÇÃO EM GRADE E CONTROLES --- */
+.study-view-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem;
+    border-radius: 9999px;
+    backdrop-filter: blur(5px);
+    border: 1px solid #ddd;
+    z-index: 20;
+}
+
+.study-view-controls button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 9999px;
+    background-color: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: #555;
+}
+
+.study-view-controls button .material-icons {
+    font-size: 1.25rem;
+}
+
+.study-view-controls button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.study-view-controls button.active {
+    background-color: #fff;
+    color: #007AFF;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.flashcard-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    margin-top: 5rem;
+}
+
+.flashcard-preview-card {
+    background: linear-gradient(135deg, #0097a7, #006064);
+    color: #fff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    height: 220px;
+    overflow: hidden;
+    border: 1px solid #005662;
+}
+
+.flashcard-preview-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.preview-front, .preview-back {
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.preview-front {
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.preview-back {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+/* Mensagem de fallback */
+.no-flashcards-message, .loading-text {
+    text-align: center;
+    color: #555;
+    margin-top: 5rem;
+}
+
+/* Ajustes para telas menores */
+@media (max-width: 768px) {
+    .study-view-controls {
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: fit-content;
+    }
+
+    .flashcard-grid-container {
+        grid-template-columns: 1fr;
+    }
+}

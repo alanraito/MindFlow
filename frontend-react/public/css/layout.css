@@ -1,0 +1,62 @@
+/*
+  Arquivo: public/css/layout.css
+  Descrição: Adicionada a animação de hover para os itens do menu, com base na estrutura de classes do componente Sidebar.
+*/
+.app-layout {
+    display: flex;
+    height: 100vh;
+    background-color: var(--background-color);
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.content-area {
+    padding: 40px;
+    flex: 1;
+}
+
+/* Como o layout principal está sendo controlado por classes do Tailwind nos componentes,
+  vamos focar este arquivo nos estilos personalizados, como a animação do menu.
+*/
+
+/* Estilo e Animação para os Itens do Menu da Sidebar */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    
+    /* Propriedades para a animação */
+    transform: translateX(0) scale(1);
+    transition: background-color 0.2s, color 0.2s, transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+/* Efeito Hover */
+.sidebar-link:hover {
+    background-color: var(--accent-color-light);
+    color: var(--accent-color);
+    transform: translateX(5px) scale(1.03); /* Efeito de crescimento e movimento */
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15); /* Sombra suave para efeito de "elevação" */
+}
+
+/* Estilo do link ativo (quando a rota corresponde) */
+.sidebar-link.active {
+    background-color: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+/* Remove o efeito de hover do item que já está ativo para não causar confusão */
+.sidebar-link.active:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}

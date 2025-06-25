@@ -1,0 +1,24 @@
+/*
+  Arquivo: src/components/FlashcardModal.css
+  Descrição: CSS simplificado para complementar o componente `FlashcardModal` refatorado. Os estilos desnecessários foram removidos, e os existentes foram ajustados para melhorar a aparência do formulário.
+*/
+
+/*
+  Os estilos genéricos para o modal, como .modal-overlay e .modal-content,
+  agora vêm de public/css/components.css, pois o FlashcardModal
+  foi refatorado para usar o componente <Modal> compartilhado.
+  As classes .form-label e .form-input-settings também são globais.
+*/
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Garante que o textarea tenha uma altura mínima e seja redimensionável verticalmente */
+#flashcard-front,
+#flashcard-back {
+    min-height: 80px;
+    resize: vertical;
+}
