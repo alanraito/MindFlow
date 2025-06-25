@@ -1,178 +1,112 @@
 /*
-  Arquivo: src/pages/StudyPage.js
-  Descrição: A estrutura da página foi reorganizada e estilizada para um layout mais moderno, com um cabeçalho claro e abas de navegação funcionais.
+  Arquivo: src/pages/SignupPage.js
+  Descrição: Adicionada uma verificação de autenticação. Se o usuário já estiver logado, ele será redirecionado automaticamente para o dashboard, corrigindo o bug de renderização incorreta.
 */
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
-import { useFlashcards } from '../context/FlashcardProvider';
-import { useWordCloudsAPI } from '../context/WordCloudProvider';
-import Flashcard from '../components/Flashcard';
-import WordCloudModal from '../components/WordCloudModal';
-import './StudyPage.css'; // Importa a nova folha de estilos
+import React, { useState } from 'react';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { useNotifications } from '../hooks/useNotifications';
+import { API_URL } from '../api';
+import Logo from '../assets/logo.svg';
 
-const StudyPage = () => {
-    const { mapId } = useParams();
-    const location = useLocation();
-    const { flashcards, loading: flashcardsLoading, getFlashcardsByMap, deleteFlashcard } = useFlashcards();
-    const { wordClouds, loading: wordCloudsLoading, getWordCloudsByMap, deleteWordCloud } = useWordCloudsAPI();
+const SignupPage = () => {
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        username: '',
+        birthDate: '',
+        email: '',
+        password: '',
+    });
+    const { register, isAuthenticated } = useAuth();
+    const { showNotification } = useNotifications();
+    const navigate = useNavigate();
 
-    const [mainView, setMainView] = useState(location.state?.initialView || 'flashcards');
-    const [studyMode, setStudyMode] = useState('focus'); // 'focus' ou 'grid'
-
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isFlipped, setIsFlipped] = useState(false);
-    const [animationClass, setAnimationClass] = useState('');
-    
-    const [selectedWordCloud, setSelectedWordCloud] = useState(null);
-
-    useEffect(() => {
-        if (mapId) {
-            getFlashcardsByMap(mapId);
-            getWordCloudsByMap(mapId);
-        }
-    }, [mapId, getFlashcardsByMap, getWordCloudsByMap]);
-
-    const handleNext = () => {
-        if (flashcards.length <= 1 || animationClass) return;
-        setAnimationClass('fade-out');
-        setTimeout(() => {
-            const nextIndex = (currentIndex + 1) % flashcards.length;
-            if (isFlipped) setIsFlipped(false);
-            setCurrentIndex(nextIndex);
-            setAnimationClass('fade-in');
-            setTimeout(() => setAnimationClass(''), 200);
-        }, 200);
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.id]: e.target.value });
     };
 
-    const handlePrev = () => {
-        if (flashcards.length <= 1 || animationClass) return;
-        setAnimationClass('fade-out');
-        setTimeout(() => {
-            const prevIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
-            if (isFlipped) setIsFlipped(false);
-            setCurrentIndex(prevIndex);
-            setAnimationClass('fade-in');
-            setTimeout(() => setAnimationClass(''), 200);
-        }, 200);
-    };
-
-    const handleDeleteFlashcard = async (id, front) => {
-        if (!window.confirm(`Tem certeza que deseja deletar o flashcard "${front}"?`)) return;
-        const success = await deleteFlashcard(id);
-        if (success && flashcards.length - 1 > 0 && currentIndex >= flashcards.length - 1) {
-            setCurrentIndex(prev => prev - 1);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.msg || 'Erro ao criar conta');
+            }
+            register(data.token);
+            navigate('/app/dashboard'); // Redireciona para o dashboard após o sucesso
+        } catch (err) {
+            showNotification(err.message, 'error');
         }
     };
-    
-    const handleDeleteWordCloud = async (id, title) => {
-        if (!window.confirm(`Tem certeza que deseja deletar a nuvem de palavras do mapa "${title}"?`)) return;
-        await deleteWordCloud(id);
-    };
-    
-    const handleCardSelect = (index) => {
-        setCurrentIndex(index);
-        setStudyMode('focus');
-    };
 
-    useEffect(() => {
-        if (!animationClass) {
-            setIsFlipped(false);
-        }
-    }, [currentIndex, animationClass]);
-
-    const currentCard = flashcards[currentIndex];
-    const isLoading = flashcardsLoading || wordCloudsLoading;
+    // Se o usuário já está logado, redireciona para o dashboard
+    if (isAuthenticated) {
+        return <Navigate to="/app/dashboard" replace />;
+    }
 
     return (
-        <div className="study-page-container">
-            <header className="study-page-header">
-                <h1>Área de Estudo</h1>
-                <Link to={`/app/mindmap/${mapId}`} className="button-secondary">
-                    <span className="material-icons mr-2">arrow_back</span>
-                    Voltar ao Mapa
-                </Link>
-            </header>
-
-            <div className="study-area-selector">
-                <button onClick={() => setMainView('flashcards')} className={mainView === 'flashcards' ? 'active' : ''}>Flashcards</button>
-                <button onClick={() => setMainView('wordclouds')} className={mainView === 'wordclouds' ? 'active' : ''}>Nuvens de Palavras</button>
-            </div>
-
-            {mainView === 'flashcards' && (
-                <>
-                    <div className="study-view-controls">
-                        <button onClick={() => setStudyMode('focus')} className={studyMode === 'focus' ? 'active' : ''} title="Modo Foco"><span className="material-icons">view_carousel</span> Foco</button>
-                        <button onClick={() => setStudyMode('grid')} className={studyMode === 'grid' ? 'active' : ''} title="Modo Grade"><span className="material-icons">view_module</span> Grade</button>
+        <div className="relative flex size-full min-h-screen flex-col bg-gray-50 group/design-root overflow-x-hidden" style={{fontFamily: '"Work Sans", "Noto Sans", sans-serif'}}>
+            <div className="layout-container flex h-full grow flex-col">
+                <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e9edf1] px-10 py-3">
+                    <Link to="/" className="flex items-center gap-4 text-[#101419]">
+                         <div className="size-4">
+                             <img src={Logo} alt="MindFlow Logo" />
+                         </div>
+                         <h2 className="text-[#101419] text-lg font-bold leading-tight tracking-[-0.015em]">MindFlow</h2>
+                    </Link>
+                    <nav className="flex items-center gap-6">
+                        <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-blue-600">Já tem uma conta? Faça Login</Link>
+                    </nav>
+                </header>
+                <div className="px-4 md:px-40 flex flex-1 justify-center items-center">
+                    <div className="layout-content-container flex flex-col w-full max-w-lg py-5">
+                        <form onSubmit={handleSubmit}>
+                            <h2 className="text-[#101419] tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">Crie sua conta</h2>
+                            <div className="flex flex-col gap-4 px-4 py-3">
+                                <div className="flex flex-col md:flex-row gap-4">
+                                    <label className="flex flex-col flex-1">
+                                        <p className="text-[#101419] text-base font-medium leading-normal pb-2">Nome</p>
+                                        <input id="firstName" type="text" required placeholder="Seu nome" value={formData.firstName} onChange={handleChange} className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101419] focus:outline-0 focus:ring-0 border border-[#d3dbe4] bg-gray-50 focus:border-[#d3dbe4] h-14 placeholder:text-[#58728d] p-[15px] text-base font-normal leading-normal" />
+                                    </label>
+                                    <label className="flex flex-col flex-1">
+                                        <p className="text-[#101419] text-base font-medium leading-normal pb-2">Sobrenome</p>
+                                        <input id="lastName" type="text" required placeholder="Seu sobrenome" value={formData.lastName} onChange={handleChange} className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101419] focus:outline-0 focus:ring-0 border border-[#d3dbe4] bg-gray-50 focus:border-[#d3dbe4] h-14 placeholder:text-[#58728d] p-[15px] text-base font-normal leading-normal" />
+                                    </label>
+                                </div>
+                                <label className="flex flex-col">
+                                    <p className="text-[#101419] text-base font-medium leading-normal pb-2">Usuário</p>
+                                    <input id="username" type="text" required placeholder="Crie um nome de usuário" maxLength="20" value={formData.username} onChange={handleChange} className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101419] focus:outline-0 focus:ring-0 border border-[#d3dbe4] bg-gray-50 focus:border-[#d3dbe4] h-14 placeholder:text-[#58728d] p-[15px] text-base font-normal leading-normal" />
+                                </label>
+                                <label className="flex flex-col">
+                                    <p className="text-[#101419] text-base font-medium leading-normal pb-2">Data de Nascimento</p>
+                                    <input id="birthDate" type="date" required value={formData.birthDate} onChange={handleChange} className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101419] focus:outline-0 focus:ring-0 border border-[#d3dbe4] bg-gray-50 focus:border-[#d3dbe4] h-14 placeholder:text-[#58728d] p-[15px] text-base font-normal leading-normal" />
+                                </label>
+                                <label className="flex flex-col">
+                                    <p className="text-[#101419] text-base font-medium leading-normal pb-2">Email</p>
+                                    <input id="email" type="email" required placeholder="seu@email.com" value={formData.email} onChange={handleChange} className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101419] focus:outline-0 focus:ring-0 border border-[#d3dbe4] bg-gray-50 focus:border-[#d3dbe4] h-14 placeholder:text-[#58728d] p-[15px] text-base font-normal leading-normal" />
+                                </label>
+                                <label className="flex flex-col">
+                                    <p className="text-[#101419] text-base font-medium leading-normal pb-2">Senha</p>
+                                    <input id="password" type="password" required placeholder="Crie uma senha" value={formData.password} onChange={handleChange} className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101419] focus:outline-0 focus:ring-0 border border-[#d3dbe4] bg-gray-50 focus:border-[#d3dbe4] h-14 placeholder:text-[#58728d] p-[15px] text-base font-normal leading-normal" />
+                                </label>
+                            </div>
+                            <div className="flex px-4 py-3">
+                                <button type="submit" className="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 bg-[#1e88e5] hover:bg-[#1565c0] text-white text-base font-bold leading-normal tracking-[0.015em]">
+                                    <span className="truncate">Criar conta</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <main className="study-main-content">
-                        {isLoading ? <h2 className="loading-text">Carregando...</h2> : !currentCard ? (
-                            <div className="no-content-message">
-                                <p className="text-2xl font-bold">Nenhum flashcard para este mapa.</p>
-                                <p>Volte ao mapa e crie alguns para começar a estudar!</p>
-                            </div>
-                        ) : studyMode === 'focus' ? (
-                            <>
-                                <div className={`flashcard-focus-container ${animationClass}`}>
-                                    {currentCard && <Flashcard card={currentCard} onDelete={handleDeleteFlashcard} isFlipped={isFlipped} onFlip={() => setIsFlipped(f => !f)} />}
-                                </div>
-                                <div className="study-navigation">
-                                    <button onClick={handlePrev} className="nav-button" title="Anterior" disabled={flashcards.length <= 1}><span className="material-icons">chevron_left</span></button>
-                                    <span className="page-indicator">{flashcards.length > 0 ? currentIndex + 1 : 0} / {flashcards.length}</span>
-                                    <button onClick={handleNext} className="nav-button" title="Próximo" disabled={flashcards.length <= 1}><span className="material-icons">chevron_right</span></button>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flashcard-grid-container">
-                                {flashcards.map((card, index) => (
-                                    <div key={card._id} className="flashcard-preview-card" onClick={() => handleCardSelect(index)}>
-                                        <div className="preview-front">{card.front}</div>
-                                        <div className="preview-divider"></div>
-                                        <div className="preview-back">{card.back}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </main>
-                </>
-            )}
-
-            {mainView === 'wordclouds' && (
-                <main className="study-main-content">
-                     {isLoading ? <h2 className="loading-text">Carregando...</h2> : wordClouds.length === 0 ? (
-                        <div className="no-content-message">
-                            <p className="text-2xl font-bold">Nenhuma nuvem de palavras salva.</p>
-                            <p>Gere e salve uma nuvem de palavras no seu mapa para vê-la aqui.</p>
-                        </div>
-                     ) : (
-                        <div className="wordcloud-grid-container">
-                            {wordClouds.map(wc => (
-                                <div key={wc._id} className="wordcloud-preview-card">
-                                    <div className="wordcloud-preview-info">
-                                        <h3>{wc.mapTitle}</h3>
-                                        <p>Salva em: {new Date(wc.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                    <div className="wordcloud-preview-actions">
-                                        <button onClick={() => setSelectedWordCloud(wc)} className="button-primary">Visualizar</button>
-                                        <button onClick={() => handleDeleteWordCloud(wc._id, wc.mapTitle)} className="button-danger">Deletar</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                     )}
-                </main>
-            )}
-
-            {selectedWordCloud && (
-                 <WordCloudModal 
-                    isOpen={!!selectedWordCloud}
-                    onClose={() => setSelectedWordCloud(null)}
-                    words={selectedWordCloud.words}
-                    mapTitle={selectedWordCloud.mapTitle}
-                    isViewingSaved={true}
-                />
-            )}
+                </div>
+            </div>
         </div>
     );
 };
 
-export default StudyPage;
+export default SignupPage;
