@@ -7,7 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 // A URL base aponta para a variável de ambiente ou para a produção.
 // Para desenvolvimento local, crie um arquivo .env.local na pasta 'frontend-react'
 // e adicione a linha: REACT_APP_API_URL=http://localhost:5000
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://mindflowbackend.onrender.com/api';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://mindflowbackend.onrender.com';
 export const API_URL = `${API_BASE_URL}/api`;
 
 export const fetchWithAuth = async (url, options = {}) => {
