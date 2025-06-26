@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/MindmapPage.js
-  Descrição: A página agora verifica o nível de permissão do usuário ao carregar e ajusta a interface de forma dinâmica, desabilitando controles de edição para usuários sem as permissões adequadas.
+  Descrição: Corrigido o erro de compilação 'setIsWordCloudModalOpen is not defined' e ajustada a lógica para que o modal da nuvem de palavras abra imediatamente com o estado de carregamento.
 */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -235,7 +235,7 @@ const MindmapFlow = () => {
                 setMapTitle('Novo Mapa Mental');
                 setNodes([]);
                 setEdges([]);
-                setPermission('owner'); // Novo mapa, o usuário é o dono
+                setPermission('owner');
                 setCurrentMap({ title: 'Novo Mapa Mental', nodes: [], connections: [] });
             }
         };
@@ -303,17 +303,21 @@ const MindmapFlow = () => {
                 setActiveFlashcardTopic(topic);
                 setFlashcardModalOpen(true);
                 break;
-            case 'wordcloud': 
+            case 'wordcloud':
+                setWordCloudData([]);
+                setWordCloudModalOpen(true);
+                setIsWordCloudLoading(true);
                 try {
                     const words = await processTextForWordCloud(nodes);
                     if (words === null) {
                         showNotification('Adicione mais conteúdo ao mapa para gerar uma nuvem de palavras.', 'info');
+                        setWordCloudModalOpen(false); // Corrigido o nome da função
                         return;
                     }
                     setWordCloudData(words);
-                    setWordCloudModalOpen(true);
                 } catch (error) {
                     showNotification(error.message, 'error');
+                    setWordCloudModalOpen(false); // Corrigido o nome da função
                 } finally {
                     setIsWordCloudLoading(false);
                 }
@@ -364,10 +368,12 @@ const MindmapFlow = () => {
                         )}
                     </ol>
                 </nav>
-                <button onClick={() => mapId ? setShareModalOpen(true) : showNotification('Salve o mapa antes de compartilhar.', 'error')} className="button-primary font-semibold py-2 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center text-sm">
-                    <span className="material-icons text-sm mr-2">group_add</span>
-                    Compartilhar
-                </button>
+                {permission === 'owner' && (
+                    <button onClick={() => mapId ? setShareModalOpen(true) : showNotification('Salve o mapa antes de compartilhar.', 'error')} className="button-primary font-semibold py-2 px-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center text-sm">
+                        <span className="material-icons text-sm mr-2">group_add</span>
+                        Compartilhar
+                    </button>
+                )}
             </div>
             <div className="flex-grow relative" style={{ height: '100%', backgroundColor: mapBgColor }}>
                 <ReactFlow 

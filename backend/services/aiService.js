@@ -51,7 +51,7 @@ export const generateFlashcardFromTopic = async (topic) => {
 /**
  * Analisa um texto usando a IA do Gemini para extrair palavras-chave relevantes para uma nuvem de palavras.
  * @param {string} mapText O conteúdo textual completo do mapa mental.
- * @returns {Promise<Array<{text: string, value: number}>>} Uma promessa que resolve para um array de palavras com seus pesos.
+ * @returns {Promise<Array<{text: string, value: number}>>} Uma promisse que resolve para um array de palavras com seus pesos.
  */
 export const generateWordCloudFromText = async (mapText) => {
     const prompt = `
