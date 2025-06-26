@@ -1,6 +1,6 @@
 /*
   Arquivo: src/components/ShareModal.css
-  Descrição: Estilos atualizados para o novo modal de compartilhamento com abas e lista de colaboradores.
+  Descrição: Adicionada uma classe '.invite-button' dedicada para corrigir o bug de visibilidade do botão "Convidar".
 */
 
 .modal-overlay {
@@ -33,21 +33,48 @@
     color: #9ca3af;
 }
 .tab-button.active {
-    color: #007AFF;
-    border-bottom-color: #007AFF;
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
 }
 .dark-mode .tab-button.active {
     color: #60a5fa;
     border-bottom-color: #60a5fa;
 }
 
+/* Formulário de Convite */
+.invite-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
 /* Estilos da lista de colaboradores */
+.collaborators-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
 .collaborator-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
-    border-radius: 6px;
+    padding: 0.75rem 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+.dark-mode .collaborator-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.collaborator-info {
+    flex-grow: 1;
+}
+
+.collaborator-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .remove-collaborator-btn {
@@ -64,6 +91,60 @@
     background-color: #991b1b;
 }
 
+.role-selector-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.role-selector {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: var(--background-color-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    color: var(--text-color-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 44px;
+    min-width: 140px;
+}
+
+.dark-mode .role-selector {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #d1d5db;
+}
+
+.role-selector:hover {
+    border-color: #9ca3af;
+}
+.dark-mode .role-selector:hover {
+    border-color: #6b7280;
+}
+
+.role-selector-arrow {
+    position: absolute;
+    right: 0.75rem;
+    pointer-events: none;
+    color: var(--text-color-secondary);
+}
+
+
+/* Badges de Permissão */
+.role-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.owner-badge { background-color: #fef3c7; color: #92400e; }
+.dark-mode .owner-badge { background-color: #78350f; color: #fde68a; }
 
 /* Estilos genéricos reutilizados */
 .secondary-text { color: #6B7280; }
@@ -73,30 +154,33 @@
     width: 100%; border: 1px solid #d1d5db; background-color: #f9fafb; 
     border-radius: 8px; padding: 0.75rem 1rem; color: #1f2937; 
     transition: all 0.2s;
+    height: 44px;
 }
 .dark-mode .form-input-settings {
     background-color: #374151; border-color: #4b5563; color: #d1d5db;
 }
 .form-input-settings:focus {
-    outline: none; border-color: #007AFF; 
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    outline: none; border-color: var(--color-accent); 
+    box-shadow: 0 0 0 2px var(--accent-color-light);
 }
 
-.modal-button-primary {
-    border: none; background-color: #007AFF; color: white; 
+.invite-button, .modal-button-primary {
+    border: none; background-color: var(--color-accent); color: rgb(183, 181, 233); 
     padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 600; 
     cursor: pointer; transition: background-color 0.2s;
     display: inline-flex; align-items: center; justify-content: center;
+    height: 44px;
+    flex-shrink: 0;
 }
-.modal-button-primary:hover { background-color: #005ECC; }
-.modal-button-primary:disabled {
-    background-color: #a0c3ff; cursor: not-allowed;
+.invite-button:hover, .modal-button-primary:hover { background-color: var(--accent-color-dark); }
+.invite-button:disabled, .modal-button-primary:disabled {
+    background-color: #a5b4fc; cursor: not-allowed;
 }
-.dark-mode .modal-button-primary:disabled { background-color: #1e3a8a; }
+.dark-mode .invite-button:disabled, .dark-mode .modal-button-primary:disabled { background-color: #3730a3; }
 
 
 .modal-button-secondary {
-    border: none; background-color: #e5e7eb; color: #374151;
+    border: none; background-color: #afc4ee; color: #374151;
     padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 600;
     cursor: pointer; transition: background-color 0.2s;
 }

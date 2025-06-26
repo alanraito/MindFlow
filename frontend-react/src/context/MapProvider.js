@@ -1,6 +1,6 @@
 /*
   Arquivo: src/context/MapProvider.js
-  Descrição: As funções 'createNewMap' e 'saveMap' foram atualizadas para incluir a propriedade 'lineThickness' no objeto do mapa ao interagir com a API.
+  Descrição: Adicionadas novas funções 'updateCollaboratorRole' e 'getPermissionForMap' para gerenciar o novo sistema de permissões. A função 'inviteCollaborator' foi atualizada para enviar o 'role' selecionado.
 */
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { fetchWithAuth, API_URL } from '../api';
@@ -18,7 +18,7 @@ export const MapProvider = ({ children }) => {
     const [sharedMaps, setSharedMaps] = useState([]);
     const [loading, setLoading] = useState(false);
     const { showNotification } = useNotifications();
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
 
     const fetchAllMaps = useCallback(async () => {
         if (!isAuthenticated) return;
@@ -123,6 +123,23 @@ export const MapProvider = ({ children }) => {
         return [...myMaps, ...sharedMaps].find(m => m._id === mapId);
     }, [myMaps, sharedMaps]);
 
+    const getPermissionForMap = useCallback(async (mapId) => {
+        const map = getMapById(mapId);
+        if (!map) return null;
+        if (map.user._id === user?._id) return 'owner';
+
+        try {
+            const res = await fetchWithAuth(`${API_URL}/permissions/${mapId}`);
+            if(!res.ok) return null;
+            const permissions = await res.json();
+            const userPermission = permissions.find(p => p.user._id === user?._id);
+            return userPermission ? userPermission.role : null;
+        } catch (err) {
+            return null;
+        }
+    }, [getMapById, user]);
+
+
     const generateShareLink = async (mapId) => {
         try {
             const res = await fetchWithAuth(`${API_URL}/maps/${mapId}/share`, { method: 'POST' });
@@ -146,15 +163,31 @@ export const MapProvider = ({ children }) => {
         }
     };
     
-    const inviteCollaborator = async (mapId, email) => {
+    const inviteCollaborator = async (mapId, email, role) => {
         try {
             const res = await fetchWithAuth(`${API_URL}/permissions`, {
                 method: 'POST',
-                body: JSON.stringify({ mapId, email })
+                body: JSON.stringify({ mapId, email, role })
             });
             const data = await res.json();
             if(!res.ok) throw new Error(data.msg || 'Falha ao convidar');
             showNotification('Convite enviado com sucesso!', 'success');
+            return data;
+        } catch (err) {
+            showNotification(err.message, 'error');
+            return null;
+        }
+    };
+    
+    const updateCollaboratorRole = async (permissionId, role) => {
+        try {
+            const res = await fetchWithAuth(`${API_URL}/permissions/${permissionId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ role })
+            });
+            const data = await res.json();
+            if(!res.ok) throw new Error(data.msg || 'Falha ao atualizar permissão');
+            showNotification('Permissão atualizada!', 'success');
             return data;
         } catch (err) {
             showNotification(err.message, 'error');
@@ -183,9 +216,11 @@ export const MapProvider = ({ children }) => {
         saveMap,
         deleteMap,
         getMapById,
+        getPermissionForMap,
         generateShareLink,
         getCollaborators,
         inviteCollaborator,
+        updateCollaboratorRole,
         removeCollaborator
     };
 

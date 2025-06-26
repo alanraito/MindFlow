@@ -1,11 +1,12 @@
 /*
   Arquivo: src/pages/DashboardPage.js
-  Descrição: Adicionado o botão "Nuvens de Palavras" em cada card de mapa, que direciona o usuário para a página de estudos com a aba correta já selecionada.
+  Descrição: Integrado o novo componente SkeletonCard para exibir um estado de carregamento aprimorado enquanto os dados dos mapas são buscados.
 */
 import React, { useEffect, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMapsAPI } from '../context/MapProvider';
 import { API_URL, fetchWithAuth } from '../api';
+import SkeletonCard from '../components/SkeletonCard'; // Importa o novo componente
 
 const MapCard = ({ map, onDelete }) => {
     const creationDate = new Date(map.createdAt).toLocaleDateString('pt-BR', {
@@ -84,6 +85,14 @@ const DashboardPage = () => {
         }
     }, [fetchAllMaps]);
 
+    const renderSkeletonGrid = () => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+                <SkeletonCard key={index} />
+            ))}
+        </div>
+    );
+
     return (
         <div className="app-view active">
             <div className="flex items-center mb-8">
@@ -96,29 +105,35 @@ const DashboardPage = () => {
             
             <section>
                 <h2 className="text-2xl font-semibold main-content-text mb-4">Meus Mapas</h2>
-                {loading && <p>Carregando...</p>}
-                {!loading && myMaps.length === 0 && (
-                    <div className="text-center py-10 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                        <p className="secondary-text mb-4">Você ainda não criou nenhum mapa.</p>
-                        <Link to="/app/mindmap" className="button-primary font-semibold py-2 px-5 rounded-full shadow-md">
-                            Criar meu primeiro mapa
-                        </Link>
-                    </div>
+                {loading ? renderSkeletonGrid() : (
+                    <>
+                        {!loading && myMaps.length === 0 && (
+                            <div className="text-center py-10 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                <p className="secondary-text mb-4">Você ainda não criou nenhum mapa.</p>
+                                <Link to="/app/mindmap" className="button-primary font-semibold py-2 px-5 rounded-full shadow-md">
+                                    Criar meu primeiro mapa
+                                </Link>
+                            </div>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {myMaps.map(map => <MapCard key={map._id} map={map} onDelete={handleDelete} />)}
+                        </div>
+                    </>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {myMaps.map(map => <MapCard key={map._id} map={map} onDelete={handleDelete} />)}
-                </div>
             </section>
 
              <section className="mt-12">
                 <h2 className="text-2xl font-semibold main-content-text mb-4">Compartilhados Comigo</h2>
-                {loading && <p>Carregando...</p>}
-                {!loading && sharedMaps.length === 0 && (
-                    <p className="secondary-text">Nenhum mapa foi compartilhado com você ainda.</p>
+                {loading ? renderSkeletonGrid() : (
+                    <>
+                        {!loading && sharedMaps.length === 0 && (
+                            <p className="secondary-text">Nenhum mapa foi compartilhado com você ainda.</p>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {sharedMaps.map(map => <MapCard key={map._id} map={map} />)}
+                        </div>
+                    </>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {sharedMaps.map(map => <MapCard key={map._id} map={map} />)}
-                </div>
             </section>
         </div>
     );

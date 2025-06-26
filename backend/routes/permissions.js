@@ -1,6 +1,6 @@
 /*
   Arquivo: routes/permissions.js
-  Descrição: Novas rotas de API para gerenciar o compartilhamento de mapas por convite: listar, convidar e remover colaboradores.
+  Descrição: As rotas foram atualizadas para gerenciar os novos papéis (roles). Adicionada uma rota PUT para permitir a alteração do nível de permissão de um colaborador.
 */
 import express from 'express';
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -11,11 +11,14 @@ import Permission from '../models/Permission.js';
 const router = express.Router();
 
 // @route   POST /api/permissions
-// @desc    Convidar um usuário para colaborar em um mapa
-// @access  Private
+// @desc    Convidar um usuário para colaborar em um mapa com um papel específico
 router.post('/', authMiddleware, async (req, res) => {
-    const { mapId, email } = req.body;
+    const { mapId, email, role } = req.body;
     const inviterId = req.user.id;
+
+    if (!['editor', 'contributor', 'viewer'].includes(role)) {
+        return res.status(400).json({ msg: 'Papel de permissão inválido.' });
+    }
 
     try {
         const map = await Map.findById(mapId);
@@ -35,7 +38,7 @@ router.post('/', authMiddleware, async (req, res) => {
             map: mapId,
             user: userToInvite.id,
             grantedBy: inviterId,
-            permissionLevel: 'edit'
+            role: role
         });
 
         await newPermission.save();
@@ -51,7 +54,6 @@ router.post('/', authMiddleware, async (req, res) => {
 
 // @route   GET /api/permissions/:mapId
 // @desc    Listar colaboradores de um mapa
-// @access  Private
 router.get('/:mapId', authMiddleware, async (req, res) => {
     try {
         const permissions = await Permission.find({ map: req.params.mapId })
@@ -63,9 +65,38 @@ router.get('/:mapId', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   PUT /api/permissions/:id
+// @desc    Atualizar o papel de um colaborador
+router.put('/:id', authMiddleware, async (req, res) => {
+    const { role } = req.body;
+    if (!['editor', 'contributor', 'viewer'].includes(role)) {
+        return res.status(400).json({ msg: 'Papel de permissão inválido.' });
+    }
+
+    try {
+        const permission = await Permission.findById(req.params.id);
+        if (!permission) return res.status(404).json({ msg: 'Permissão não encontrada.' });
+
+        const map = await Map.findById(permission.map);
+        if (map.user.toString() !== req.user.id) {
+            return res.status(403).json({ msg: 'Apenas o dono do mapa pode alterar permissões.' });
+        }
+
+        permission.role = role;
+        await permission.save();
+
+        const populatedPermission = await Permission.findById(permission._id).populate('user', 'firstName lastName email');
+        res.json(populatedPermission);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Erro no servidor');
+    }
+});
+
+
 // @route   DELETE /api/permissions/:id
 // @desc    Remover permissão de um colaborador
-// @access  Private
 router.delete('/:id', authMiddleware, async (req, res) => {
     try {
         const permission = await Permission.findById(req.params.id);

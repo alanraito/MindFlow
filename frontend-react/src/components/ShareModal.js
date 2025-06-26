@@ -1,50 +1,71 @@
 /*
   Arquivo: src/components/ShareModal.js
-  Descrição: Modal de compartilhamento aprimorado para verificar e exibir o link público existente ao ser aberto.
+  Descrição: O ícone do seletor de permissões foi corrigido para 'expand_more', garantindo a aparência correta do componente.
 */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ShareModal.css';
 import { useNotifications } from '../hooks/useNotifications';
 import { useMapsAPI } from '../context/MapProvider';
 import { useAuth } from '../hooks/useAuth';
 
+const RoleSelector = ({ currentRole, onRoleChange, permissionId }) => {
+    return (
+        <div className="role-selector-wrapper">
+            <select 
+                value={currentRole} 
+                onChange={(e) => onRoleChange(permissionId, e.target.value)}
+                className="role-selector"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <option value="editor">Editor</option>
+                <option value="contributor">Contribuidor</option>
+                <option value="viewer">Visualizador</option>
+            </select>
+            <span className="material-icons role-selector-arrow">expand_more</span>
+        </div>
+    );
+};
+
+
 const ShareModal = ({ isOpen, onClose, mapId }) => {
     const [activeTab, setActiveTab] = useState('invite');
     const [collaborators, setCollaborators] = useState([]);
     const [email, setEmail] = useState('');
+    const [role, setRole] = useState('viewer'); // Papel padrão para novos convites
     const [isLoading, setIsLoading] = useState(false);
     const [shareLink, setShareLink] = useState('');
     
     const { showNotification } = useNotifications();
-    const { getCollaborators, inviteCollaborator, removeCollaborator, generateShareLink, getMapById } = useMapsAPI();
+    const { getCollaborators, inviteCollaborator, removeCollaborator, updateCollaboratorRole, generateShareLink, getMapById } = useMapsAPI();
     const { user: currentUser } = useAuth();
+
+    const fetchCollaborators = useCallback(async () => {
+        if (isOpen && mapId) {
+            setIsLoading(true);
+            const fetchedCollaborators = await getCollaborators(mapId);
+            setCollaborators(fetchedCollaborators);
+            setIsLoading(false);
+        }
+    }, [isOpen, mapId, getCollaborators]);
 
     useEffect(() => {
         if (isOpen && mapId) {
-            // Verifica se o mapa já tem um link público ao abrir o modal
             const map = getMapById(mapId);
             if (map && map.isPublic && map.shareId) {
                 setShareLink(`${window.location.origin}/view/${map.shareId}`);
             } else {
-                setShareLink(''); // Reseta o link se o mapa não for público
+                setShareLink('');
             }
-
-            const fetchCollaborators = async () => {
-                setIsLoading(true);
-                const fetchedCollaborators = await getCollaborators(mapId);
-                setCollaborators(fetchedCollaborators);
-                setIsLoading(false);
-            };
             fetchCollaborators();
         }
-    }, [isOpen, mapId, getCollaborators, getMapById]);
+    }, [isOpen, mapId, getMapById, fetchCollaborators]);
 
     const handleInvite = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        const newCollaborator = await inviteCollaborator(mapId, email);
+        const newCollaborator = await inviteCollaborator(mapId, email, role);
         if (newCollaborator) {
-            setCollaborators([...collaborators, newCollaborator]);
+            setCollaborators(prev => [...prev, newCollaborator]);
             setEmail('');
         }
         setIsLoading(false);
@@ -53,7 +74,14 @@ const ShareModal = ({ isOpen, onClose, mapId }) => {
     const handleRemove = async (permissionId) => {
         const success = await removeCollaborator(permissionId);
         if (success) {
-            setCollaborators(collaborators.filter(c => c._id !== permissionId));
+            setCollaborators(prev => prev.filter(c => c._id !== permissionId));
+        }
+    };
+    
+    const handleRoleChange = async (permissionId, newRole) => {
+        const updatedPermission = await updateCollaboratorRole(permissionId, newRole);
+        if(updatedPermission) {
+            setCollaborators(prev => prev.map(c => c._id === permissionId ? updatedPermission : c));
         }
     };
 
@@ -86,28 +114,39 @@ const ShareModal = ({ isOpen, onClose, mapId }) => {
 
                 {activeTab === 'invite' && (
                     <div>
-                        <form onSubmit={handleInvite} className="flex gap-2 mb-4">
+                        <form onSubmit={handleInvite} className="invite-form">
                             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email do colaborador" className="form-input-settings flex-grow" required/>
+                            <div className="role-selector-wrapper">
+                                <select value={role} onChange={(e) => setRole(e.target.value)} className="role-selector invite-role-selector">
+                                    <option value="viewer">Visualizador</option>
+                                    <option value="contributor">Contribuidor</option>
+                                    <option value="editor">Editor</option>
+                                </select>
+                                <span className="material-icons role-selector-arrow">expand_more</span>
+                            </div>
                             <button type="submit" disabled={isLoading} className="modal-button-primary">Convidar</button>
                         </form>
-                        <h3 className="font-semibold mb-2">Pessoas com Acesso</h3>
-                        <div className="space-y-2">
+                        <h3 className="font-semibold my-4">Pessoas com Acesso</h3>
+                        <div className="collaborators-list">
                             <div className="collaborator-item">
-                                <div>
+                                <div className="collaborator-info">
                                     <p className="font-medium">{currentUser.firstName} {currentUser.lastName} (Você)</p>
                                     <p className="text-sm secondary-text">{currentUser.email}</p>
                                 </div>
-                                <span className="text-sm secondary-text font-medium">Proprietário</span>
+                                <span className="role-badge owner-badge">Proprietário</span>
                             </div>
                             {collaborators.map(c => (
                                 <div key={c._id} className="collaborator-item">
-                                    <div>
+                                    <div className="collaborator-info">
                                         <p className="font-medium">{c.user.firstName} {c.user.lastName}</p>
                                         <p className="text-sm secondary-text">{c.user.email}</p>
                                     </div>
-                                    <button onClick={() => handleRemove(c._id)} className="remove-collaborator-btn" title="Remover acesso">
-                                        <span className="material-icons">person_remove</span>
-                                    </button>
+                                    <div className="collaborator-actions">
+                                        <RoleSelector currentRole={c.role} onRoleChange={handleRoleChange} permissionId={c._id}/>
+                                        <button onClick={() => handleRemove(c._id)} className="remove-collaborator-btn" title="Remover acesso">
+                                            <span className="material-icons">person_remove</span>
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

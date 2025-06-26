@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/MindmapPage.js
-  Descrição: A propriedade 'mapId' agora é passada para o WordCloudModal para permitir o salvamento da nuvem de palavras.
+  Descrição: A página agora verifica o nível de permissão do usuário ao carregar e ajusta a interface de forma dinâmica, desabilitando controles de edição para usuários sem as permissões adequadas.
 */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -33,7 +33,7 @@ let nodeIdCounter = 1;
 const MindmapFlow = () => {
     const { mapId } = useParams();
     const navigate = useNavigate();
-    const { getMapById, saveMap, loading: mapsLoading } = useMapsAPI();
+    const { getMapById, saveMap, loading: mapsLoading, getPermissionForMap } = useMapsAPI();
     const { createFlashcard } = useFlashcards();
     const { showNotification } = useNotifications();
     const { 
@@ -45,6 +45,7 @@ const MindmapFlow = () => {
     const [socket, setSocket] = useState(null);
     const [mapTitle, setMapTitle] = useState('Novo Mapa Mental');
     const [currentMap, setCurrentMap] = useState(null);
+    const [permission, setPermission] = useState(null);
     const [isTitleEditing, setIsTitleEditing] = useState(false);
     const [nodes, setNodes, onNodesChangeInternal] = useNodesState([]);
     const [edges, setEdges, onEdgesChangeInternal] = useEdgesState([]);
@@ -60,6 +61,9 @@ const MindmapFlow = () => {
     const [wordCloudData, setWordCloudData] = useState([]);
     const [activeTopic, setActiveTopic] = useState(null);
     const [activeFlashcardTopic, setActiveFlashcardTopic] = useState(null);
+
+    const isReadOnly = permission !== 'owner' && permission !== 'editor';
+    const canContribute = permission === 'contributor';
 
     const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
@@ -134,16 +138,19 @@ const MindmapFlow = () => {
     }, [lineThickness, setEdges]);
 
     const onNodesChange = useCallback((changes) => {
+        if (isReadOnly && !canContribute) return;
         onNodesChangeInternal(changes);
         if (socket && mapId) socket.emit('nodes:change', { mapId, changes });
-    }, [socket, mapId, onNodesChangeInternal]);
+    }, [socket, mapId, onNodesChangeInternal, isReadOnly, canContribute]);
 
     const onEdgesChange = useCallback((changes) => {
+        if (isReadOnly) return;
         onEdgesChangeInternal(changes);
         if (socket && mapId) socket.emit('edges:change', { mapId, changes });
-    }, [socket, mapId, onEdgesChangeInternal]);
+    }, [socket, mapId, onEdgesChangeInternal, isReadOnly]);
 
     const onConnect = useCallback((params) => {
+        if (isReadOnly) return;
         const newEdge = { 
             id: `edge-${params.source}-${params.target}-${new Date().getTime()}`,
             ...params, 
@@ -152,7 +159,7 @@ const MindmapFlow = () => {
             style: { strokeWidth: lineThickness }
         };
         onEdgesChange([{ item: newEdge, type: 'add' }]);
-    }, [onEdgesChange, lineThickness]);
+    }, [onEdgesChange, lineThickness, isReadOnly]);
     
     const handleTopicContextMenu = useCallback((event, nodeId, topicIndex) => {
         event.preventDefault();
@@ -161,15 +168,17 @@ const MindmapFlow = () => {
     }, [closeAllMenus]);
 
     const onEdgeContextMenu = useCallback((event, edge) => {
+        if (isReadOnly) return;
         event.preventDefault();
         closeAllMenus();
         setEdgeMenu({ id: edge.id, top: event.clientY, left: event.clientX });
-    }, [closeAllMenus]);
+    }, [closeAllMenus, isReadOnly]);
     
     const handleDeleteEdge = useCallback((edgeIdToDelete) => {
+        if (isReadOnly) return;
         onEdgesChange([{ type: 'remove', id: edgeIdToDelete }]);
         closeAllMenus();
-    }, [onEdgesChange, closeAllMenus]);
+    }, [onEdgesChange, closeAllMenus, isReadOnly]);
 
     const updateNodeData = useCallback((nodeId, newTopics) => {
         setNodes((nds) =>
@@ -178,8 +187,9 @@ const MindmapFlow = () => {
     }, [setNodes]);
 
     const deleteNode = useCallback((nodeId) => {
+        if (isReadOnly) return;
         onNodesChange([{ id: nodeId, type: 'remove' }]);
-    }, [onNodesChange]);
+    }, [onNodesChange, isReadOnly]);
     
     const convertToFlowData = useCallback((initialMapData) => {
         if (!initialMapData) return;
@@ -189,7 +199,9 @@ const MindmapFlow = () => {
             id: node.id, type: 'custom', position: { x: parseFloat(node.left), y: parseFloat(node.top) },
             data: { 
                 topics: node.topics.map(t => ({...t, isEditing: false})),
-                updateNodeData, onShowContextMenu: handleTopicContextMenu, onDeleteNode: deleteNode,
+                updateNodeData, 
+                onShowContextMenu: handleTopicContextMenu, 
+                onDeleteNode: deleteNode,
                 borderStyle: initialMapData.borderStyle || 'solid'
             },
         }));
@@ -207,19 +219,34 @@ const MindmapFlow = () => {
     }, [setNodes, setEdges, updateNodeData, handleTopicContextMenu, deleteNode, setLineThickness, setBorderStyle]);
     
     useEffect(() => {
-        if (mapId) {
-            const existingMap = getMapById(mapId);
-            if (existingMap) { setCurrentMap(existingMap); setMapTitle(existingMap.title); convertToFlowData(existingMap); }
-            else if (!mapsLoading) { navigate('/app/dashboard'); }
-        } else {
-            setMapTitle('Novo Mapa Mental'); setNodes([]); setEdges([]);
-            setLineThickness(2);
-            setBorderStyle('solid');
-            setCurrentMap({ title: 'Novo Mapa Mental', nodes: [], connections: [], lineThickness: 2, borderStyle: 'solid' });
-        }
-    }, [mapId, getMapById, navigate, mapsLoading, convertToFlowData, setNodes, setEdges, setLineThickness, setBorderStyle]);
+        const initializeMap = async () => {
+            if (mapId) {
+                const existingMap = getMapById(mapId);
+                if (existingMap) {
+                    setCurrentMap(existingMap);
+                    setMapTitle(existingMap.title);
+                    convertToFlowData(existingMap);
+                    const userPermission = await getPermissionForMap(mapId);
+                    setPermission(userPermission);
+                } else if (!mapsLoading) {
+                    navigate('/app/dashboard');
+                }
+            } else {
+                setMapTitle('Novo Mapa Mental');
+                setNodes([]);
+                setEdges([]);
+                setPermission('owner'); // Novo mapa, o usuário é o dono
+                setCurrentMap({ title: 'Novo Mapa Mental', nodes: [], connections: [] });
+            }
+        };
+        initializeMap();
+    }, [mapId, getMapById, navigate, mapsLoading, convertToFlowData, setNodes, setEdges, getPermissionForMap]);
     
     const handleSave = useCallback(async (nodesToSave = nodes) => {
+        if (isReadOnly) {
+            showNotification('Você não tem permissão para salvar este mapa.', 'error');
+            return;
+        }
         const apiNodes = nodesToSave.map(node => ({
             id: node.id, left: `${node.position.x}px`, top: `${node.position.y}px`,
             width: `${node.width}px`, height: `${node.height}px`,
@@ -234,9 +261,10 @@ const MindmapFlow = () => {
         const saved = await saveMap(mapToSave);
         if (saved && !mapId) { navigate(`/app/mindmap/${saved._id}`, { replace: true }); }
         else if (saved) { setCurrentMap(saved); }
-    }, [nodes, edges, mapTitle, currentMap, saveMap, mapId, navigate, lineThickness, borderStyle]);
+    }, [nodes, edges, mapTitle, currentMap, saveMap, mapId, navigate, lineThickness, borderStyle, isReadOnly, showNotification]);
 
     const addNode = useCallback(() => {
+        if (isReadOnly && !canContribute) return;
         const newId = `node-${nodeIdCounter++}`;
         const position = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
         const newNode = {
@@ -250,7 +278,7 @@ const MindmapFlow = () => {
             },
         };
         onNodesChange([{ item: newNode, type: 'add' }]);
-    }, [screenToFlowPosition, onNodesChange, updateNodeData, handleTopicContextMenu, deleteNode, nodeColor, fontColor, borderStyle]);
+    }, [screenToFlowPosition, onNodesChange, updateNodeData, handleTopicContextMenu, deleteNode, nodeColor, fontColor, borderStyle, isReadOnly, canContribute]);
     
     const handleMenuAction = async (action) => {
         if (!nodeMenu) return;
@@ -263,6 +291,7 @@ const MindmapFlow = () => {
 
         switch (action) {
             case 'edit':
+                if(isReadOnly) return showNotification('Você não tem permissão para editar.', 'error');
                 const newNodes = nodes.map(n => n.id === nodeId ? { ...n, data: { ...n.data, topics: n.data.topics.map((t, i) => i === topicIndex ? { ...t, isEditing: true } : { ...t, isEditing: false }) } } : n);
                 setNodes(newNodes);
                 break;
@@ -275,24 +304,19 @@ const MindmapFlow = () => {
                 setFlashcardModalOpen(true);
                 break;
             case 'wordcloud': 
-                setIsWordCloudLoading(true);
-                setWordCloudData([]);
-                setWordCloudModalOpen(true);
                 try {
                     const words = await processTextForWordCloud(nodes);
+                    if (words === null) {
+                        showNotification('Adicione mais conteúdo ao mapa para gerar uma nuvem de palavras.', 'info');
+                        return;
+                    }
                     setWordCloudData(words);
+                    setWordCloudModalOpen(true);
                 } catch (error) {
                     showNotification(error.message, 'error');
-                    setWordCloudModalOpen(false); // Fecha o modal em caso de erro
                 } finally {
                     setIsWordCloudLoading(false);
                 }
-                break;
-            case 'audio': 
-                showNotification('Funcionalidade "Gerar Áudio" ainda não implementada.', 'info'); 
-                break;
-            case 'questions': 
-                showNotification('Funcionalidade "Trilha de Questões" ainda não implementada.', 'info'); 
                 break;
             default: 
                 showNotification(`Funcionalidade "${action}" não implementada.`, 'error'); 
@@ -311,6 +335,7 @@ const MindmapFlow = () => {
     };
 
     const handleSaveLinks = async (nodeId, topicIndex, newLinks) => {
+        if(isReadOnly) return showNotification('Você não tem permissão para salvar links.', 'error');
         const newNodes = nodes.map(n => 
             n.id === nodeId 
                 ? { ...n, data: { ...n.data, topics: n.data.topics.map((t, i) => i === topicIndex ? { ...t, links: newLinks } : t) } } 
@@ -321,10 +346,7 @@ const MindmapFlow = () => {
         showNotification('Links atualizados e mapa salvo com sucesso!', 'success');
     };
 
-    if (!currentMap && mapId && !mapsLoading) {
-        return <div className="flex justify-center items-center h-full">Mapa não encontrado ou você não tem permissão para vê-lo.</div>;
-    }
-    if (mapsLoading) {
+    if (mapsLoading || permission === null) {
         return <div className="flex justify-center items-center h-full">Carregando...</div>;
     }
 
@@ -336,9 +358,9 @@ const MindmapFlow = () => {
                         <li><button onClick={() => navigate('/app/dashboard')} className="font-semibold secondary-text hover:text-accent">Dashboard</button></li>
                         <li><span className="mx-2 text-gray-400">/</span></li>
                         {isTitleEditing ? (
-                            <input type="text" value={mapTitle} onChange={(e) => setMapTitle(e.target.value)} onBlur={() => setIsTitleEditing(false)} onKeyDown={(e) => e.key === 'Enter' && setIsTitleEditing(false)} className="font-bold bg-transparent outline-none ring-2 ring-accent rounded-md p-1" autoFocus />
+                            <input type="text" value={mapTitle} onChange={(e) => setMapTitle(e.target.value)} onBlur={() => setIsTitleEditing(false)} onKeyDown={(e) => e.key === 'Enter' && setIsTitleEditing(false)} className="font-bold bg-transparent outline-none ring-2 ring-accent rounded-md p-1" autoFocus readOnly={isReadOnly} />
                         ) : (
-                            <li onClick={() => setIsTitleEditing(true)} className="header-text cursor-pointer hover:bg-gray-100 rounded-md p-1" title="Clique para editar o título">{mapTitle}</li>
+                            <li onClick={() => !isReadOnly && setIsTitleEditing(true)} className={`header-text ${!isReadOnly ? 'cursor-pointer hover:bg-gray-100' : ''} rounded-md p-1`} title="Clique para editar o título">{mapTitle}</li>
                         )}
                     </ol>
                 </nav>
@@ -354,24 +376,25 @@ const MindmapFlow = () => {
                     nodeTypes={nodeTypes} onPaneClick={closeAllMenus} onNodeClick={closeAllMenus}
                     onEdgeContextMenu={onEdgeContextMenu}
                     fitView proOptions={{ hideAttribution: true }}
+                    nodesDraggable={!isReadOnly}
+                    nodesConnectable={!isReadOnly}
+                    elementsSelectable={!isReadOnly}
                 >
                     <Controls />
-                    <MiniMap 
-                        nodeColor={(node) => node.data.nodeColor || '#ffffff'} 
-                        nodeStrokeColor="#000000"
-                        nodeStrokeWidth={4} 
-                        zoomable 
-                        pannable 
-                    />
+                    <MiniMap />
                     <Background variant="dots" gap={12} size={1} />
                     <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                        <button onClick={addNode} className="bg-white p-2.5 rounded-lg shadow-md hover:bg-gray-200 transition-colors" title="Adicionar novo card">
-                            <span className="material-icons text-gray-700">add</span>
-                        </button>
-                        <button onClick={() => handleSave()} className="button-primary font-semibold py-2.5 px-5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center text-sm">
-                            <span className="material-icons text-sm mr-2">save</span>
-                            Salvar Mapa
-                        </button>
+                        {(!isReadOnly || canContribute) && (
+                            <button onClick={addNode} className="bg-white p-2.5 rounded-lg shadow-md hover:bg-gray-200 transition-colors" title="Adicionar novo card">
+                                <span className="material-icons text-gray-700">add</span>
+                            </button>
+                        )}
+                        {!isReadOnly && (
+                            <button onClick={() => handleSave()} className="button-primary font-semibold py-2.5 px-5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 flex items-center text-sm">
+                                <span className="material-icons text-sm mr-2">save</span>
+                                Salvar Mapa
+                            </button>
+                        )}
                     </div>
                 </ReactFlow>
                 {nodeMenu && (
@@ -381,8 +404,6 @@ const MindmapFlow = () => {
                         <div className="my-1 border-t border-gray-200 dark:border-gray-700"></div>
                         <button onClick={() => handleMenuAction('flashcard')}><span className="material-icons">style</span> Gerar Flashcard</button>
                         <button onClick={() => handleMenuAction('wordcloud')}><span className="material-icons">cloud</span> Nuvem de Palavras</button>
-                        <button onClick={() => handleMenuAction('audio')}><span className="material-icons">volume_up</span> Gerar Áudio</button>
-                        <button onClick={() => handleMenuAction('questions')}><span className="material-icons">quiz</span> Trilha de Questões</button>
                     </div>
                 )}
                 {edgeMenu && (
@@ -398,6 +419,7 @@ const MindmapFlow = () => {
                         onClose={() => setLinkModalOpen(false)}
                         topic={activeTopic}
                         onSave={handleSaveLinks}
+                        isReadOnly={isReadOnly}
                     />
                 )}
                 {activeFlashcardTopic && (
@@ -410,7 +432,7 @@ const MindmapFlow = () => {
                         showNotification={showNotification}
                     />
                 )}
-                {mapId && (
+                {mapId && permission === 'owner' && (
                      <ShareModal
                         isOpen={isShareModalOpen}
                         onClose={() => setShareModalOpen(false)}

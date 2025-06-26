@@ -1,0 +1,89 @@
+/*
+  Arquivo: src/components/SkeletonCard.css
+  Descrição: Estilos para o componente SkeletonCard, incluindo a animação de brilho (shimmer) para indicar o estado de carregamento.
+*/
+
+.skeleton-card {
+    background-color: var(--background-color-secondary);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dark-mode .skeleton-card {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+.skeleton {
+    background-color: var(--skeleton-bg-color);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    animation: shimmer 1.5s infinite linear;
+}
+
+.dark-mode .skeleton {
+    background-color: #374151;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.skeleton {
+    background-image: linear-gradient(to right, 
+        var(--skeleton-bg-color) 0%, 
+        var(--skeleton-shimmer-color) 20%, 
+        var(--skeleton-bg-color) 40%, 
+        var(--skeleton-bg-color) 100%
+    );
+    background-repeat: no-repeat;
+    background-size: 800px 104px;
+}
+
+.dark-mode .skeleton {
+     background-image: linear-gradient(to right, 
+        #374151 0%, 
+        #4b5563 20%, 
+        #374151 40%, 
+        #374151 100%
+    );
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 80%;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-text {
+    height: 12px;
+    width: 60%;
+}
+
+.skeleton-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.skeleton-button {
+    height: 32px;
+    width: 80px;
+    border-radius: 9999px;
+}
+.skeleton-button-primary {
+    height: 32px;
+    width: 100px;
+    border-radius: 9999px;
+}

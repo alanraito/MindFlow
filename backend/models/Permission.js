@@ -1,6 +1,6 @@
 /*
   Arquivo: models/Permission.js
-  Descrição: Novo Schema para armazenar as permissões de compartilhamento, definindo qual usuário tem acesso a qual mapa e com que permissão.
+  Descrição: O schema foi atualizado para usar o campo 'role' com permissões granulares (editor, contributor, viewer), substituindo o antigo 'permissionLevel'.
 */
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
@@ -21,10 +21,10 @@ const PermissionSchema = new Schema({
         ref: 'User',
         required: true
     },
-    permissionLevel: {
+    role: {
         type: String,
-        enum: ['view', 'edit'],
-        default: 'edit'
+        enum: ['editor', 'contributor', 'viewer'],
+        default: 'viewer'
     },
     createdAt: {
         type: Date,

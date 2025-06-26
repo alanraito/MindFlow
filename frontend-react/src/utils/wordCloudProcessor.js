@@ -1,8 +1,8 @@
 /*
   Arquivo: src/utils/wordCloudProcessor.js
-  Descrição: Refatorado para fazer uma chamada de API ao backend, que agora utiliza a IA do Gemini para processar o texto, em vez de fazer o cálculo localmente.
+  Descrição: Adicionada uma validação no frontend para garantir que a chamada à IA só seja feita se houver um número mínimo de palavras, tornando o processo mais eficiente e robusto.
 */
-import { fetchWithAuth, API_URL } from '../api'; // Supondo que fetchWithAuth esteja em api.js
+import { fetchWithAuth, API_URL } from '../api';
 
 export const processTextForWordCloud = async (nodes) => {
   // 1. Extrai todo o texto bruto dos tópicos.
@@ -11,11 +11,14 @@ export const processTextForWordCloud = async (nodes) => {
     .map(topic => topic.text.replace(/<[^>]*>/g, ' ')) // Remove tags HTML antes de enviar
     .join(' ');
 
-  if (!allText.trim()) {
-    return [];
+  // 2. Validação de conteúdo mínimo no frontend
+  const wordCount = allText.trim().split(/\s+/).filter(Boolean).length;
+  if (wordCount < 5) {
+    // Retorna null para indicar que não há conteúdo suficiente, permitindo que a UI mostre uma notificação.
+    return null;
   }
   
-  // 2. Faz a chamada para o backend para processamento com IA.
+  // 3. Faz a chamada para o backend para processamento com IA.
   try {
     const response = await fetchWithAuth(`${API_URL}/ai/process-wordcloud`, {
       method: 'POST',

@@ -1,6 +1,6 @@
 /*
   Arquivo: services/aiService.js
-  Descrição: O prompt da função 'generateWordCloudFromText' foi refinado para instruir a IA a realizar uma análise contextual profunda, atribuindo um índice de relevância para cada conceito em vez de apenas contar a frequência das palavras.
+  Descrição: O prompt da IA foi aprimorado com uma nova regra para retornar um array vazio caso o texto seja insuficiente para análise, tornando a função mais robusta.
 */
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
@@ -62,7 +62,8 @@ export const generateWordCloudFromText = async (mapText) => {
       1.  **FOCO NA RELEVÂNCIA, NÃO NA FREQUÊNCIA:** A pontuação deve refletir a importância do conceito para o entendimento do tema central. Um termo pode ser muito relevante mesmo que apareça poucas vezes.
       2.  **LEMATIZAÇÃO E AGRUPAMENTO:** Agrupe sinônimos e variações de uma palavra sob um único conceito principal. Por exemplo, "legislativo", "legislação", e "legislador" devem ser agrupados no conceito "Lei". "constitucional" e "constituição" devem ser agrupados no conceito "Constituição".
       3.  **IDENTIFIQUE CONCEITOS COMPOSTOS:** Dê maior peso a bigramas ou trigramas que representam um conceito único e importante (ex: "Controle Difuso", "Supremo Tribunal Federal", "Ação Direta de Inconstitucionalidade").
-      4.  **SAÍDA ESTRITA:** Retorne o resultado exclusivamente como um array de objetos JSON, com no máximo 50 itens, ordenados do mais relevante para o menos relevante. Não inclua nenhuma outra explicação ou texto antes ou depois do array.
+      4.  **RESPOSTA PARA CONTEÚDO INSUFICIENTE:** Se o texto fornecido for muito curto ou não tiver substância para uma análise significativa, retorne um array vazio: [].
+      5.  **SAÍDA ESTRITA:** Retorne o resultado exclusivamente como um array de objetos JSON, com no máximo 50 itens, ordenados do mais relevante para o menos relevante. Não inclua nenhuma outra explicação ou texto antes ou depois do array.
 
       TEXTO PARA ANÁLISE:
       "${mapText}"

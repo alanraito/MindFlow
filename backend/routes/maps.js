@@ -1,6 +1,6 @@
 /*
   Arquivo: routes/maps.js
-  Descrição: As rotas de criação e atualização foram modificadas para incluir o processamento e salvamento da propriedade 'borderStyle'.
+  Descrição: A lógica de autorização da rota de atualização (PUT) foi ajustada para permitir edições apenas do dono do mapa ou de colaboradores com o papel de 'editor'. A rota de deleção continua restrita ao dono.
 */
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -69,10 +69,11 @@ router.put('/:id', authMiddleware, async (req, res) => {
         let map = await Map.findById(req.params.id);
         if (!map) return res.status(404).json({ msg: 'Mapa não encontrado' });
         
-        const hasPermission = await Permission.findOne({ map: req.params.id, user: req.user.id, level: 'edit' });
-        if (map.user.toString() !== req.user.id && !hasPermission) {
+        const hasPermission = await Permission.findOne({ map: req.params.id, user: req.user.id });
+        if (map.user.toString() !== req.user.id && (!hasPermission || hasPermission.role !== 'editor')) {
             return res.status(401).json({ msg: 'Ação não autorizada' });
         }
+        
         map.title = title;
         map.nodes = nodes;
         map.connections = connections;

@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/PublicMapView.js
-  Descrição: Nova página para exibir um mapa mental público em modo de apenas leitura.
+  Descrição: O componente foi ajustado para passar funções vazias e todas as propriedades de estilo para o CustomNode, garantindo que ele opere em modo de apenas leitura e seja renderizado corretamente.
 */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
@@ -34,8 +34,14 @@ const PublicMapView = () => {
                     position: { x: parseFloat(node.left), y: parseFloat(node.top) },
                     data: { 
                         topics: node.topics,
-                        nodeColor: '#ffffff',
-                        fontColor: '#1a202c',
+                        // Garante que o nó seja somente de leitura, passando funções vazias
+                        updateNodeData: () => {},
+                        onShowContextMenu: () => {},
+                        onDeleteNode: () => {},
+                        // Passa as propriedades de estilo para consistência visual
+                        nodeColor: data.nodeColor || '#ffffff',
+                        fontColor: data.fontColor || '#1a202c',
+                        borderStyle: data.borderStyle || 'solid',
                     },
                 }));
 
@@ -45,6 +51,10 @@ const PublicMapView = () => {
                     target: conn.to,
                     type: 'smoothstep',
                     animated: true,
+                    style: {
+                        strokeWidth: data.lineThickness || 2,
+                        strokeDasharray: data.lineStyle === 'dashed' ? '5 5' : null,
+                    }
                 }));
 
                 setMapData({ title: data.title, nodes: flowNodes, edges: flowEdges });
@@ -71,25 +81,25 @@ const PublicMapView = () => {
     return (
         <div className="w-full h-screen flex flex-col">
              <header className="p-4 border-b border-gray-200 bg-white shadow-sm text-center">
-                <h1 className="text-xl font-bold">{mapData?.title}</h1>
-                <p className="text-sm text-gray-500">Visualizando mapa compartilhado</p>
-            </header>
-            <div className="flex-grow">
-                <ReactFlow
-                    nodes={mapData?.nodes}
-                    edges={mapData?.edges}
-                    nodeTypes={nodeTypes}
-                    fitView
-                    nodesDraggable={false}
-                    nodesConnectable={false}
-                    elementsSelectable={false}
-                    proOptions={{ hideAttribution: true }}
-                >
-                    <Controls showInteractive={false} />
-                    <MiniMap pannable zoomable />
-                    <Background variant="dots" gap={12} size={1} />
-                </ReactFlow>
-            </div>
+                 <h1 className="text-xl font-bold">{mapData?.title}</h1>
+                 <p className="text-sm text-gray-500">Visualizando mapa compartilhado</p>
+             </header>
+             <div className="flex-grow">
+                 <ReactFlow
+                     nodes={mapData?.nodes}
+                     edges={mapData?.edges}
+                     nodeTypes={nodeTypes}
+                     fitView
+                     nodesDraggable={false}
+                     nodesConnectable={false}
+                     elementsSelectable={false}
+                     proOptions={{ hideAttribution: true }}
+                 >
+                     <Controls showInteractive={false} />
+                     <MiniMap pannable zoomable />
+                     <Background variant="dots" gap={12} size={1} />
+                 </ReactFlow>
+             </div>
         </div>
     );
 };
