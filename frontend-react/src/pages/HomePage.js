@@ -1,35 +1,87 @@
 /*
   Arquivo: src/pages/HomePage.js
-  Descrição: Componente que representa a página inicial (landing page) do MindFlow. Apresenta a proposta de valor da ferramenta e direciona os usuários para o login ou cadastro. Substitui o antigo `index.html`.
+  Descrição: Página inicial redesenhada com uma nova seção de funcionalidades, layout aprimorado e elementos visuais para ser mais atrativa e profissional.
 */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Logo from '../assets/logo.svg';
+import './HomePage.css';
+
+const FeatureCard = ({ icon, title, description }) => (
+    <div className="feature-card">
+        <div className="feature-icon-wrapper">
+            <span className="material-icons">{icon}</span>
+        </div>
+        <h3>{title}</h3>
+        <p>{description}</p>
+    </div>
+);
 
 const HomePage = () => {
     return (
-        <div className="relative flex size-full min-h-screen flex-col bg-gray-50 group/design-root overflow-x-hidden" style={{fontFamily: '"Work Sans", "Noto Sans", sans-serif'}}>
-            <div className="layout-container flex h-full grow flex-col">
-                <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e9edf1] px-10 py-3">
-                    <div className="flex items-center gap-4 text-[#101419]">
-                        <div className="size-4">
-                            <img src={Logo} alt="MindFlow Logo" />
+        <div className="homepage-logged-in-container">
+            <main>
+                <section className="hero-section-logged-in">
+                    <div className="hero-content">
+                        <h2>Organize suas ideias, acelere seu aprendizado.</h2>
+                        <p>Crie mapas mentais de forma intuitiva, colabore em tempo real e transforme seus estudos com flashcards e nuvens de palavras geradas por IA.</p>
+                        <Link to="/app/dashboard" className="cta-button-logged-in">Ir para o Dashboard</Link>
+                    </div>
+                    <div className="hero-icon-background">
+                        <span className="material-icons">bubble_chart</span>
+                    </div>
+                </section>
+
+                <section className="features-section">
+                    <FeatureCard
+                        icon="hub"
+                        title="Mapas Mentais Intuitivos"
+                        description="Visualize e conecte suas ideias em um canvas infinito, projetado para um fluxo de trabalho sem interrupções."
+                    />
+                    <FeatureCard
+                        icon="style"
+                        title="Flashcards com IA"
+                        description="Transforme qualquer tópico do seu mapa em flashcards de estudo com um único clique, otimizando sua revisão."
+                    />
+                    <FeatureCard
+                        icon="cloud_queue"
+                        title="Nuvens de Palavras"
+                        description="Gere nuvens de palavras para identificar os temas centrais e as ideias mais recorrentes em seus mapas."
+                    />
+                </section>
+
+                <section id="plans" className="pricing-section">
+                    <h3>Planos para todos os níveis</h3>
+                    <p>Escolha o plano que melhor se adapta às suas necessidades e potencialize seus resultados.</p>
+                    <div className="pricing-cards-container">
+                        {/* Card do Plano Mensal */}
+                        <div className="pricing-card">
+                            <h4>Plano Mensal</h4>
+                            <div className="price">R$19,90 <span className="period">/mês</span></div>
+                            <ul>
+                                <li><span className="material-icons">check_circle</span> Mapas Mentais Ilimitados</li>
+                                <li><span className="material-icons">check_circle</span> Flashcards com IA</li>
+                                <li><span className="material-icons">check_circle</span> Nuvens de Palavras</li>
+                                <li><span className="material-icons">check_circle</span> Colaboração em tempo real</li>
+                                <li><span className="material-icons">check_circle</span> Suporte Prioritário</li>
+                            </ul>
+                            <button className="pricing-button">Seja Premium</button>
                         </div>
-                        <h2 className="text-[#101419] text-lg font-bold leading-tight tracking-[-0.015em]">MindFlow</h2>
+
+                        {/* Card do Plano Anual */}
+                        <div className="pricing-card recommended">
+                            <span className="recommended-badge">Mais Popular</span>
+                            <h4>Plano Anual</h4>
+                            <div className="price">R$199,90 <span className="period">/ano</span></div>
+                            <ul>
+                                <li><span className="material-icons">check_circle</span> Todos os benefícios do plano mensal</li>
+                                <li><span className="material-icons">check_circle</span> **Economize mais de 15%**</li>
+                                <li><span className="material-icons">check_circle</span> Acesso antecipado a novas funcionalidades</li>
+                            </ul>
+                            <button className="pricing-button">Seja Premium Anual</button>
+                        </div>
                     </div>
-                    <nav className="flex items-center gap-6">
-                        <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-blue-600">Login</Link>
-                        <Link to="/signup" className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full">Cadastre-se</Link>
-                    </nav>
-                </header>
-                <main className="flex-grow flex items-center justify-center text-center">
-                    <div className="hero-section">
-                        <h1 className="text-5xl font-bold text-gray-800 mb-4">Organize Suas Ideias Sem Limites.</h1>
-                        <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">MindFlow é uma ferramenta de mapa mental, projetada para ajudar você a visualizar, conectar e expandir seus pensamentos de forma intuitiva e sem restrições de espaço.</p>
-                        <Link to="/signup" className="text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full">Comece a usar gratuitamente</Link>
-                    </div>
-                </main>
-            </div>
+                </section>
+            </main>
         </div>
     );
 };

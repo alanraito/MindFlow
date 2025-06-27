@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/StudyPage.js
-  Descrição: A página foi reestruturada com um cabeçalho e uma barra de navegação para um layout mais limpo, resolvendo a sobreposição de elementos e melhorando a usabilidade.
+  Descrição: O botão de "Voltar" agora usa o estado da rota para determinar dinamicamente se deve retornar ao mapa ou ao dashboard, melhorando a fluidez da navegação.
 */
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
@@ -8,13 +8,16 @@ import { useFlashcards } from '../context/FlashcardProvider';
 import { useWordCloudsAPI } from '../context/WordCloudProvider';
 import Flashcard from '../components/Flashcard';
 import WordCloudModal from '../components/WordCloudModal';
-import './StudyPage.css'; // Importa a nova folha de estilos
+import './StudyPage.css';
 
 const StudyPage = () => {
     const { mapId } = useParams();
     const location = useLocation();
     const { flashcards, loading: flashcardsLoading, getFlashcardsByMap, deleteFlashcard } = useFlashcards();
     const { wordClouds, loading: wordCloudsLoading, getWordCloudsByMap, deleteWordCloud } = useWordCloudsAPI();
+
+    // Determina a rota de volta. Padrão é o mapa, mas usa a rota de origem se existir.
+    const backPath = location.state?.from || `/app/mindmap/${mapId}`;
 
     const [mainView, setMainView] = useState(location.state?.initialView || 'flashcards');
     const [studyMode, setStudyMode] = useState('focus');
@@ -87,26 +90,35 @@ const StudyPage = () => {
         <div className="study-page-container">
             <header className="study-page-header">
                 <h1>Área de Estudo</h1>
+
+                <div className="study-controls-wrapper">
+                    <div className="study-area-selector">
+                        <button onClick={() => setMainView('flashcards')} className={mainView === 'flashcards' ? 'active' : ''}>Flashcards</button>
+                        <button onClick={() => setMainView('wordclouds')} className={mainView === 'wordclouds' ? 'active' : ''}>Nuvens de Palavras</button>
+                    </div>
+
+                    {mainView === 'flashcards' && (
+                        <div className="study-view-controls">
+                            <button onClick={() => setStudyMode('focus')} className={studyMode === 'focus' ? 'active' : ''} title="Modo Foco">
+                                <span className="material-icons">view_carousel</span>
+                                <span className="control-text">Foco</span>
+                            </button>
+                            <button onClick={() => setStudyMode('grid')} className={studyMode === 'grid' ? 'active' : ''} title="Modo Grade">
+                                <span className="material-icons">view_module</span>
+                                <span className="control-text">Grade</span>
+                            </button>
+                        </div>
+                    )}
+                    
+                    <Link to={backPath} className="back-to-map-button">
+                        <span className="material-icons">arrow_back</span>
+                    </Link>
+                </div>
             </header>
 
-            <div className="study-page-navigation">
-                <div className="study-area-selector">
-                    <button onClick={() => setMainView('flashcards')} className={mainView === 'flashcards' ? 'active' : ''}>Flashcards</button>
-                    <button onClick={() => setMainView('wordclouds')} className={mainView === 'wordclouds' ? 'active' : ''}>Nuvens de Palavras</button>
-                </div>
-                 <Link to={`/app/mindmap/${mapId}`} className="back-to-map-button">
-                    <span className="material-icons">arrow_back</span>
-                    <span className="ml-2 hidden md:inline"></span>
-                </Link>
-            </div>
-
-            {mainView === 'flashcards' && (
-                <>
-                    <div className="study-view-controls">
-                        <button onClick={() => setStudyMode('focus')} className={studyMode === 'focus' ? 'active' : ''} title="Modo Foco"><span className="material-icons">view_carousel</span> Foco</button>
-                        <button onClick={() => setStudyMode('grid')} className={studyMode === 'grid' ? 'active' : ''} title="Modo Grade"><span className="material-icons">view_module</span> Grade</button>
-                    </div>
-                    <main className="study-main-content">
+            <main className="study-main-content">
+                {mainView === 'flashcards' && (
+                    <>
                         {isLoading ? <h2 className="loading-text">Carregando...</h2> : !currentCard ? (
                             <div className="no-content-message">
                                 <p className="text-2xl font-bold">Nenhum flashcard para este mapa.</p>
@@ -134,43 +146,43 @@ const StudyPage = () => {
                                 ))}
                             </div>
                         )}
-                    </main>
-                </>
-            )}
+                    </>
+                )}
 
-            {mainView === 'wordclouds' && (
-                <main className="study-main-content">
-                     {isLoading ? <h2 className="loading-text">Carregando...</h2> : wordClouds.length === 0 ? (
-                        <div className="no-content-message">
-                            <p className="text-2xl font-bold">Nenhuma nuvem de palavras salva.</p>
-                            <p>Gere e salve uma nuvem de palavras no seu mapa para vê-la aqui.</p>
-                        </div>
-                     ) : (
-                        <div className="wordcloud-grid-container">
-                            {wordClouds.map(wc => (
-                                <div key={wc._id} className="wordcloud-preview-card">
-                                    <div className="wordcloud-preview-info">
-                                        <h3>{wc.mapTitle}</h3>
-                                        <p>Salva em: {new Date(wc.createdAt).toLocaleDateString()}</p>
+                {mainView === 'wordclouds' && (
+                     <>
+                        {isLoading ? <h2 className="loading-text">Carregando...</h2> : wordClouds.length === 0 ? (
+                            <div className="no-content-message">
+                                <p className="text-2xl font-bold">Nenhuma nuvem de palavras salva.</p>
+                                <p>Gere e salve uma nuvem de palavras no seu mapa para vê-la aqui.</p>
+                            </div>
+                        ) : (
+                            <div className="wordcloud-grid-container">
+                                {wordClouds.map(wc => (
+                                    <div key={wc._id} className="wordcloud-preview-card">
+                                        <div className="wordcloud-preview-info">
+                                            <h3>{wc.mapTitle}</h3>
+                                            <p>Salva em: {new Date(wc.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                        <div className="wordcloud-preview-actions">
+                                            <button onClick={() => setSelectedWordCloud(wc)} className="button-primary text-sm font-semibold py-2 px-4 rounded-full">Visualizar</button>
+                                            <button onClick={() => handleDeleteWordCloud(wc._id, wc.mapTitle)} className="button-danger text-sm font-semibold py-2 px-4 rounded-full">Deletar</button>
+                                        </div>
                                     </div>
-                                    <div className="wordcloud-preview-actions">
-                                        <button onClick={() => setSelectedWordCloud(wc)} className="button-primary">Visualizar</button>
-                                        <button onClick={() => handleDeleteWordCloud(wc._id, wc.mapTitle)} className="button-danger">Deletar</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                     )}
-                </main>
-            )}
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+            </main>
 
             {selectedWordCloud && (
                  <WordCloudModal 
                     isOpen={!!selectedWordCloud}
                     onClose={() => setSelectedWordCloud(null)}
-                    words={selectedWordCloud.words}
                     mapTitle={selectedWordCloud.mapTitle}
                     isViewingSaved={true}
+                    imageData={selectedWordCloud.imageData}
                 />
             )}
         </div>

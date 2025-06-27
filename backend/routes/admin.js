@@ -1,8 +1,9 @@
 // Arquivo: /routes/admin.js
-// Descrição: Novas rotas para gerenciamento de usuários pelo administrador, incluindo criação de novos usuários.
+// Descrição: Adicionada lógica para remover todas as permissões de compartilhamento de um usuário ao deletá-lo, garantindo a integridade dos dados.
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import Permission from '../models/Permission.js'; // Importa o modelo de Permissão
 
 const router = express.Router();
 
@@ -96,7 +97,7 @@ router.put('/users/:id', async (req, res) => {
 });
 
 // @route   DELETE /api/admin/users/:id
-// @desc    Deleta um usuário
+// @desc    Deleta um usuário e todas as suas permissões associadas
 // @access  Admin
 router.delete('/users/:id', async (req, res) => {
     try {
@@ -105,8 +106,13 @@ router.delete('/users/:id', async (req, res) => {
             return res.status(404).json({ msg: 'Usuário não encontrado' });
         }
 
+        // Deleta todas as permissões associadas a este usuário
+        await Permission.deleteMany({ user: req.params.id });
+
+        // Deleta o usuário
         await user.deleteOne();
-        res.json({ msg: 'Usuário deletado com sucesso' });
+        
+        res.json({ msg: 'Usuário e suas permissões foram deletados com sucesso' });
 
     } catch (err) {
         console.error(err.message);

@@ -1,0 +1,259 @@
+/*
+  Arquivo: src/pages/HomePage.css
+  Descrição: Estilos completamente redesenhados para a página inicial logada, com foco em uma apresentação mais profissional, moderna e atrativa, incluindo animações e um layout aprimorado.
+*/
+
+/* Animações de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.homepage-logged-in-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Hero Section */
+.hero-section-logged-in {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, var(--accent-color) 0%, #3b82f6 100%);
+    border-radius: 16px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 4rem;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-section-logged-in h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    max-width: 700px;
+    margin: 0 auto 1rem;
+    line-height: 1.2;
+}
+
+.hero-section-logged-in p {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    opacity: 0.9;
+}
+
+.hero-icon-background {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30rem;
+    color: rgba(255, 255, 255, 0.05);
+    z-index: 1;
+}
+
+.hero-icon-background .material-icons {
+    font-size: inherit;
+}
+
+.cta-button-logged-in {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    background-color: white;
+    color: var(--accent-color);
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.cta-button-logged-in:hover {
+    background-color: #f0f2f5;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+
+/* Features Section */
+.features-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 5rem;
+    text-align: center;
+}
+
+.feature-card {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.feature-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+    background-color: var(--accent-color-light);
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.feature-icon-wrapper .material-icons {
+    font-size: 2rem;
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+    color: var(--text-color-secondary);
+    line-height: 1.6;
+}
+
+/* Pricing Section */
+.pricing-section {
+    text-align: center;
+    padding: 4rem 1rem;
+    background-color: #ffffff;
+    border-radius: 16px;
+}
+
+.pricing-section h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.pricing-section > p {
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 4rem;
+}
+
+.pricing-cards-container {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.pricing-card {
+    background-color: #f8f9fa;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    width: 100%;
+    max-width: 360px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+}
+
+.pricing-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.pricing-card.recommended {
+    border-color: var(--accent-color);
+    border-width: 2px;
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+}
+
+.recommended-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pricing-card h4 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.pricing-card .price {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.pricing-card .price .period {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+}
+
+.pricing-card ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2.5rem;
+    flex-grow: 1;
+}
+
+.pricing-card ul li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-color-secondary);
+    font-size: 0.95rem;
+}
+
+.pricing-card ul li .material-icons {
+    color: #28a745;
+    font-size: 1.25rem;
+}
+
+.pricing-button {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: none;
+}
+
+.pricing-card.recommended .pricing-button {
+    background: linear-gradient(90deg, var(--accent-color) 0%, #3b82f6 100%);
+    color: white;
+}
+
+.pricing-card:not(.recommended) .pricing-button {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-color-primary);
+}
+
+.pricing-card:not(.recommended) .pricing-button:hover {
+    background-color: #e9edf1;
+}

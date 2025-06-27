@@ -1,6 +1,6 @@
 /*
   Arquivo: /models/Map.js
-  Descrição: Atualizado o schema para incluir a propriedade 'borderStyle', permitindo salvar o estilo da borda (sólida ou pontilhada) para cada mapa.
+  Descrição: Schema atualizado para incluir as propriedades de estilo de cores (nodeColor, fontColor, mapBgColor), permitindo que o tema visual de cada mapa seja salvo.
 */
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
@@ -57,6 +57,18 @@ const MapSchema = new Schema({
         type: String,
         default: 'solid'
     },
+    nodeColor: {
+        type: String,
+        default: '#ffffff'
+    },
+    fontColor: {
+        type: String,
+        default: '#1a202c'
+    },
+    mapBgColor: {
+        type: String,
+        default: '#f3f4f6'
+    },
     isPublic: {
         type: Boolean,
         default: false
@@ -67,6 +79,10 @@ const MapSchema = new Schema({
         sparse: true
     },
     createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
         type: Date,
         default: Date.now
     }

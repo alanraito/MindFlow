@@ -1,6 +1,6 @@
 /*
   Arquivo: routes/maps.js
-  Descrição: A lógica de autorização da rota de atualização (PUT) foi ajustada para permitir edições apenas do dono do mapa ou de colaboradores com o papel de 'editor'. A rota de deleção continua restrita ao dono.
+  Descrição: Rotas de criação e atualização ajustadas para receber e salvar as propriedades de estilo do mapa (cores, bordas, etc.).
 */
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,8 +51,18 @@ router.get('/shared-with-me', authMiddleware, async (req, res) => {
 
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        const { title, nodes, connections, lineThickness, borderStyle } = req.body;
-        const newMap = new Map({ title, user: req.user.id, nodes, connections, lineThickness, borderStyle });
+        const { title, nodes, connections, lineThickness, borderStyle, nodeColor, fontColor, mapBgColor } = req.body;
+        const newMap = new Map({ 
+            title, 
+            user: req.user.id, 
+            nodes, 
+            connections, 
+            lineThickness, 
+            borderStyle,
+            nodeColor,
+            fontColor,
+            mapBgColor
+        });
         const map = await newMap.save();
         const mapWithOwner = await Map.findById(map._id).populate('user').lean();
         const responseMap = { ...mapWithOwner, flashcardCount: 0 };
@@ -65,7 +75,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
 router.put('/:id', authMiddleware, async (req, res) => {
     try {
-        const { title, nodes, connections, lineThickness, borderStyle } = req.body;
+        const { title, nodes, connections, lineThickness, borderStyle, nodeColor, fontColor, mapBgColor } = req.body;
         let map = await Map.findById(req.params.id);
         if (!map) return res.status(404).json({ msg: 'Mapa não encontrado' });
         
@@ -79,6 +89,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
         map.connections = connections;
         map.lineThickness = lineThickness;
         map.borderStyle = borderStyle;
+        map.nodeColor = nodeColor;
+        map.fontColor = fontColor;
+        map.mapBgColor = mapBgColor;
         map.updatedAt = Date.now();
         
         map.markModified('nodes');

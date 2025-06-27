@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/MindmapPage.js
-  Descrição: Corrigido o erro de compilação 'setIsWordCloudModalOpen is not defined' e ajustada a lógica para que o modal da nuvem de palavras abra imediatamente com o estado de carregamento.
+  Descrição: Corrigida a lógica de salvar e carregar para incluir todas as propriedades de estilo (cores, bordas, etc), garantindo que a aparência do mapa seja persistida corretamente.
 */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -37,7 +37,9 @@ const MindmapFlow = () => {
     const { createFlashcard } = useFlashcards();
     const { showNotification } = useNotifications();
     const { 
-        nodeColor, fontColor, mapBgColor, 
+        nodeColor, setNodeColor, 
+        fontColor, setFontColor, 
+        mapBgColor, setMapBgColor,
         lineThickness, setLineThickness, 
         borderStyle, setBorderStyle
     } = useTheme();
@@ -193,8 +195,13 @@ const MindmapFlow = () => {
     
     const convertToFlowData = useCallback((initialMapData) => {
         if (!initialMapData) return;
+        
         setLineThickness(initialMapData.lineThickness || 2);
         setBorderStyle(initialMapData.borderStyle || 'solid');
+        setNodeColor(initialMapData.nodeColor || '#ffffff');
+        setFontColor(initialMapData.fontColor || '#1a202c');
+        setMapBgColor(initialMapData.mapBgColor || '#f3f4f6');
+
         const flowNodes = initialMapData.nodes.map(node => ({
             id: node.id, type: 'custom', position: { x: parseFloat(node.left), y: parseFloat(node.top) },
             data: { 
@@ -206,17 +213,19 @@ const MindmapFlow = () => {
             },
         }));
         setNodes(flowNodes);
+        
         const flowEdges = initialMapData.connections.map((conn) => ({
             ...conn,
             type: 'smoothstep', animated: true, style: { strokeWidth: initialMapData.lineThickness || 2 }
         }));
         setEdges(flowEdges);
+        
         const maxId = initialMapData.nodes.reduce((max, node) => {
             const num = parseInt(node.id.split('-')[1], 10);
             return isNaN(num) ? max : Math.max(max, num);
         }, 0);
         nodeIdCounter = maxId + 1;
-    }, [setNodes, setEdges, updateNodeData, handleTopicContextMenu, deleteNode, setLineThickness, setBorderStyle]);
+    }, [setNodes, setEdges, updateNodeData, handleTopicContextMenu, deleteNode, setLineThickness, setBorderStyle, setNodeColor, setFontColor, setMapBgColor]);
     
     useEffect(() => {
         const initializeMap = async () => {
@@ -257,11 +266,22 @@ const MindmapFlow = () => {
             .filter(edge => edge && edge.id && edge.source && edge.target)
             .map(({ id, source, target }) => ({ id, source, target }));
 
-        const mapToSave = { ...currentMap, _id: currentMap?._id, title: mapTitle, nodes: apiNodes, connections: apiConnections, lineThickness, borderStyle };
+        const mapToSave = { 
+            ...currentMap, 
+            _id: currentMap?._id, 
+            title: mapTitle, 
+            nodes: apiNodes, 
+            connections: apiConnections, 
+            lineThickness, 
+            borderStyle,
+            nodeColor,
+            fontColor,
+            mapBgColor
+        };
         const saved = await saveMap(mapToSave);
         if (saved && !mapId) { navigate(`/app/mindmap/${saved._id}`, { replace: true }); }
         else if (saved) { setCurrentMap(saved); }
-    }, [nodes, edges, mapTitle, currentMap, saveMap, mapId, navigate, lineThickness, borderStyle, isReadOnly, showNotification]);
+    }, [nodes, edges, mapTitle, currentMap, saveMap, mapId, navigate, lineThickness, borderStyle, nodeColor, fontColor, mapBgColor, isReadOnly, showNotification]);
 
     const addNode = useCallback(() => {
         if (isReadOnly && !canContribute) return;
@@ -311,13 +331,13 @@ const MindmapFlow = () => {
                     const words = await processTextForWordCloud(nodes);
                     if (words === null) {
                         showNotification('Adicione mais conteúdo ao mapa para gerar uma nuvem de palavras.', 'info');
-                        setWordCloudModalOpen(false); // Corrigido o nome da função
+                        setWordCloudModalOpen(false);
                         return;
                     }
                     setWordCloudData(words);
                 } catch (error) {
                     showNotification(error.message, 'error');
-                    setWordCloudModalOpen(false); // Corrigido o nome da função
+                    setWordCloudModalOpen(false);
                 } finally {
                     setIsWordCloudLoading(false);
                 }

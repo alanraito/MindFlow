@@ -1,14 +1,9 @@
 /*
   Arquivo: /models/WordCloud.js
-  Descrição: Novo schema Mongoose para armazenar os dados das nuvens de palavras geradas, associando-as a um usuário e a um mapa específico.
+  Descrição: Schema Mongoose atualizado para armazenar a imagem da nuvem de palavras como um dataURL, em vez dos dados brutos das palavras, garantindo a visualização consistente.
 */
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
-
-const WordSchema = new Schema({
-    text: { type: String, required: true },
-    value: { type: Number, required: true }
-}, { _id: false });
 
 const WordCloudSchema = new Schema({
     user: {
@@ -25,8 +20,8 @@ const WordCloudSchema = new Schema({
         type: String,
         required: true
     },
-    words: {
-        type: [WordSchema],
+    imageData: {
+        type: String, // Armazena a imagem como um dataURL (Base64)
         required: true
     },
     createdAt: {

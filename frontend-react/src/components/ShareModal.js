@@ -1,6 +1,6 @@
 /*
   Arquivo: src/components/ShareModal.js
-  Descrição: O ícone do seletor de permissões foi corrigido para 'expand_more', garantindo a aparência correta do componente.
+  Descrição: Adicionado um filtro para garantir que apenas colaboradores com dados de usuário válidos sejam renderizados, evitando que a aplicação quebre caso uma permissão "órfã" seja encontrada.
 */
 import React, { useState, useEffect, useCallback } from 'react';
 import './ShareModal.css';
@@ -31,7 +31,7 @@ const ShareModal = ({ isOpen, onClose, mapId }) => {
     const [activeTab, setActiveTab] = useState('invite');
     const [collaborators, setCollaborators] = useState([]);
     const [email, setEmail] = useState('');
-    const [role, setRole] = useState('viewer'); // Papel padrão para novos convites
+    const [role, setRole] = useState('viewer');
     const [isLoading, setIsLoading] = useState(false);
     const [shareLink, setShareLink] = useState('');
     
@@ -135,7 +135,8 @@ const ShareModal = ({ isOpen, onClose, mapId }) => {
                                 </div>
                                 <span className="role-badge owner-badge">Proprietário</span>
                             </div>
-                            {collaborators.map(c => (
+                            {/* Adicionado filtro para garantir que c.user exista antes de mapear */}
+                            {collaborators.filter(c => c.user).map(c => (
                                 <div key={c._id} className="collaborator-item">
                                     <div className="collaborator-info">
                                         <p className="font-medium">{c.user.firstName} {c.user.lastName}</p>
@@ -154,7 +155,7 @@ const ShareModal = ({ isOpen, onClose, mapId }) => {
                 )}
 
                 {activeTab === 'link' && (
-                       <div className="space-y-4">
+                        <div className="space-y-4">
                             <p className="secondary-text">Qualquer pessoa com este link poderá visualizar o mapa (não poderá editar).</p>
                             {shareLink ? (
                                  <div className="flex items-center gap-2">
@@ -164,9 +165,9 @@ const ShareModal = ({ isOpen, onClose, mapId }) => {
                             ) : (
                                  <button onClick={handleGenerateLink} disabled={isLoading} className="modal-button-primary w-full">
                                      {isLoading ? 'Gerando...' : 'Gerar Link de Visualização'}
-                                </button>
+                                 </button>
                             )}
-                       </div>
+                        </div>
                 )}
                 
                 <div className="flex justify-end pt-6">

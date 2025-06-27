@@ -310,4 +310,16 @@
     .flashcard-grid-container {
         grid-template-columns: 1fr;
     }
+
+    /* Ajuste para o Flashcard em modo de foco no mobile */
+    .flashcard-focus-container .flashcard-container {
+        height: auto !important; /* Remove a altura inline do JS */
+        max-height: 70vh;        /* Define uma altura máxima razoável */
+    }
+
+    .flashcard-content {
+        overflow-y: auto;        /* Adiciona rolagem se o conteúdo for grande */
+        font-size: 1.25rem;      /* Opcional: ajusta a fonte */
+        padding: 1.5rem;         /* Opcional: ajusta o padding */
+    }
 }

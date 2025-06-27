@@ -103,3 +103,104 @@
         flex-direction: column;
     }
 }
+
+/*
+  Arquivo: /css/responsive.css
+  Descrição: Ajuste nos estilos para controlar a sidebar em telas menores através de classes CSS, em vez de seletores de tag genéricos.
+*/
+/* --- Responsividade / Mobile --- */
+@media (max-width: 767px) {
+    /*
+      O controle do layout principal (main content margin)
+      agora é feito por classes do Tailwind no AppLayout.js,
+      eliminando a necessidade de seletores genéricos aqui.
+    */
+
+    /* Estilos para a tabela de admin em mobile */
+    #view-admin-users table {
+        border: 0;
+    }
+    #view-admin-users thead {
+        display: none;
+    }
+    #view-admin-users tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        background-color: #f9fafb;
+        overflow: hidden;
+    }
+    .dark-mode #view-admin-users tr {
+      background-color: #1F2937;
+      border-color: #374151;
+    }
+    #view-admin-users td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        text-align: right;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .dark-mode #view-admin-users td {
+        border-bottom-color: #374151;
+    }
+    #view-admin-users td:last-child {
+        border-bottom: 0;
+    }
+    #view-admin-users td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        color: #111827;
+    }
+    .dark-mode #view-admin-users td::before {
+        color: #f9fafb;
+    }
+}
+
+/*
+  Arquivo: /css/responsive.css
+  Descrição: Estilos responsivos para a aplicação.
+*/
+/* --- Responsividade / Mobile (até 767px) --- */
+@media (max-width: 767px) {
+    /* Layout principal para mobile já controlado via AppLayout.js */
+    
+    .auth-container {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+    
+    /* Estilos para a tabela de admin em mobile (formato de cards) */
+    #admin-user-table thead {
+        display: none;
+    }
+
+    #admin-user-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        text-align: right;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    #admin-user-table tr:last-child td:last-child {
+        border-bottom: 0;
+    }
+
+    #admin-user-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        margin-right: 1rem;
+        color: #111827;
+    }
+
+    #create-user-modal {
+        flex-direction: column;
+    }
+}

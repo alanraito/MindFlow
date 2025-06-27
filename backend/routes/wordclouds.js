@@ -1,6 +1,6 @@
 /*
   Arquivo: /routes/wordclouds.js
-  Descrição: Adicionadas as rotas GET e DELETE para permitir a busca e a exclusão de nuvens de palavras salvas.
+  Descrição: Modificada a rota POST para aceitar e salvar o `imageData` da nuvem de palavras, em vez da lista de palavras.
 */
 import express from 'express';
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -10,11 +10,11 @@ import Map from '../models/Map.js';
 const router = express.Router();
 
 // @route   POST /api/wordclouds
-// @desc    Salvar uma nova nuvem de palavras
+// @desc    Salvar uma nova nuvem de palavras (como imagem)
 router.post('/', authMiddleware, async (req, res) => {
-    const { mapId, mapTitle, words } = req.body;
+    const { mapId, mapTitle, imageData } = req.body;
 
-    if (!mapId || !mapTitle || !words) {
+    if (!mapId || !mapTitle || !imageData) {
         return res.status(400).json({ msg: 'Dados incompletos para salvar a nuvem de palavras.' });
     }
 
@@ -28,7 +28,7 @@ router.post('/', authMiddleware, async (req, res) => {
             user: req.user.id,
             map: mapId,
             mapTitle,
-            words
+            imageData
         });
 
         const savedWordCloud = await newWordCloud.save();
@@ -44,7 +44,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.get('/map/:mapId', authMiddleware, async (req, res) => {
     try {
         const wordClouds = await WordCloud.find({ map: req.params.mapId, user: req.user.id })
-                                           .sort({ createdAt: -1 });
+                                          .sort({ createdAt: -1 });
         res.json(wordClouds);
     } catch (err) {
         console.error(err.message);

@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/StudyPage.css
-  Descrição: Novos estilos para criar um layout moderno e profissional para a página de estudos, incluindo cabeçalho, abas e cards estilizados.
+  Descrição: Ajustado o estilo do contêiner de nuvens de palavras para exibi-los corretamente em formato de grade.
 */
 
 .study-page-container {
@@ -9,57 +9,96 @@
 }
 
 .study-page-header {
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
 }
 
 .study-page-header h1 {
     font-size: 1.875rem;
     font-weight: 700;
     color: var(--header-text);
+    margin-bottom: 1.5rem;
 }
 
-.study-page-navigation {
+.study-controls-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 2rem;
+    flex-wrap: wrap; 
+    gap: 1.5rem; 
 }
 
 .study-area-selector {
     display: flex;
     gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    padding: 0.5rem;
+    background-color: var(--background-color-tertiary);
 }
 
 .study-area-selector button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
     font-weight: 600;
     background-color: transparent;
     border: none;
-    border-bottom: 3px solid transparent;
+    border-radius: 9999px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     color: var(--text-color-secondary);
-    margin-bottom: -1px; /* Alinha a borda com a borda do container */
 }
 
 .study-area-selector button:hover {
-    color: var(--text-color-primary);
+    background-color: var(--hover-color);
 }
 
 .study-area-selector button.active {
     color: var(--accent-color);
-    border-bottom-color: var(--color-accent);
+    background-color: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.study-view-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.study-view-controls button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background-color: var(--background-color-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-color-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.study-view-controls button:hover {
+    background-color: var(--hover-color);
+    border-color: #ccc;
+}
+
+.study-view-controls button.active {
+    background-color: var(--accent-color-light);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
 .back-to-map-button {
     display: inline-flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
     background-color: var(--background-color-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 50%;
     text-decoration: none;
     font-weight: 600;
     color: var(--text-color-primary);
@@ -74,6 +113,9 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .wordcloud-preview-card {
@@ -86,11 +128,6 @@
     flex-direction: column;
     justify-content: space-between;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.dark-mode .wordcloud-preview-card {
-    background-color: #1F2937;
-    border-color: #374151;
 }
 
 .wordcloud-preview-card:hover {
@@ -119,22 +156,6 @@
     margin-top: 1rem;
 }
 
-.wordcloud-preview-actions .button-primary,
-.wordcloud-preview-actions .button-danger {
-    border-radius: 9999px;
-    padding: 0.5rem 1.25rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-}
-
-.wordcloud-preview-actions .button-primary:hover,
-.wordcloud-preview-actions .button-danger:hover {
-    transform: scale(1.05);
-}
-
 .button-danger {
     background-color: #ef4444;
     color: white;
@@ -152,12 +173,42 @@
     border-radius: 12px;
 }
 
-.dark-mode .no-content-message {
-    background-color: #1F2937;
+.study-main-content {
+    padding-top: 0;
 }
 
-.study-view-controls {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1.5rem;
+/* Regras para mobile */
+@media (max-width: 768px) {
+    .study-page-container {
+        padding: 1rem;
+    }
+    .study-controls-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .study-area-selector, .study-view-controls {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .study-view-controls button .control-text {
+        display: none;
+    }
+
+    .back-to-map-button {
+        position: absolute;
+        top: 20px;
+        right: 1rem;
+    }
+
+    .flashcard-focus-container .flashcard-container {
+        height: auto !important;
+        max-height: 65vh;
+    }
+
+    .flashcard-focus-container .flashcard-content {
+        overflow-y: auto;
+    }
 }
