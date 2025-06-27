@@ -1,6 +1,6 @@
 /*
   Arquivo: src/pages/LoginPage.js
-  Descrição: Implementado o estado de carregamento no formulário. Ao submeter, o botão é desabilitado e exibe um spinner, melhorando o feedback visual para o usuário.
+  Descrição: Corrigido o redirecionamento padrão após o login para a nova página inicial (/app/home).
 */
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -11,12 +11,12 @@ import Logo from '../assets/logo.svg';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
-    const [isSubmitting, setIsSubmitting] = useState(false); // Estado para o carregamento do login
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { login } = useAuth();
     const { showNotification } = useNotifications();
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || '/app/dashboard';
+    const from = location.state?.from?.pathname || '/app/home'; // Redirecionamento padrão corrigido
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -24,7 +24,7 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true); // Ativa o estado de carregamento
+        setIsSubmitting(true);
         try {
             const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
@@ -39,7 +39,7 @@ const LoginPage = () => {
             navigate(from, { replace: true });
         } catch (err) {
             showNotification(err.message, 'error');
-            setIsSubmitting(false); // Desativa o carregamento em caso de erro
+            setIsSubmitting(false);
         }
     };
 
